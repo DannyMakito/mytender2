@@ -20,7 +20,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
   global: {
     headers: {
-      'x-application-name': 'gas-ems'
+      'x-application-name': 'mytender'
     }
   }
 });

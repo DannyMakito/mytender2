@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import HomePage from "@/components/landingpage/HomePage"
@@ -10,29 +11,32 @@ import BidderLayout from "./components/bidder/BidderLayout"
 import BDashboard from "@/components/bidder/BDashboard"
 import CDocuments from "@/components/contractor/CDocuments"
 import BDocuments from "@/components/bidder/BDocuments"
+import { AuthProvider } from "@/context/AuthContext"
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
 
-        {/* Contractor routes rendered inside ContractorLayout so sidebar/header persist */}
-        <Route path="/" element={<ContractorLayout />}>
-          <Route path="cdashboard" element={<CDashboard />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="tender" element={<Tender />} />
-          <Route path="cdocuments" element={<CDocuments />} />
-        </Route>
+          {/* Contractor routes rendered inside ContractorLayout so sidebar/header persist */}
+          <Route path="/" element={<ContractorLayout />}>
+            <Route path="cdashboard" element={<CDashboard />} />
+            <Route path="projects" element={<Projects />} />
+            <Route path="tender" element={<Tender />} />
+            <Route path="cdocuments" element={<CDocuments />} />
+          </Route>
 
-        {/* Bidder routes */}
-        <Route path="/" element={<BidderLayout />}>
-          <Route path="tenders" element={<Tenders />} />
-          <Route path="bdashboard" element={<BDashboard />} />
-          <Route path="bdocuments" element={<BDocuments />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+          {/* Bidder routes */}
+          <Route path="/" element={<BidderLayout />}>
+            <Route path="tenders" element={<Tenders />} />
+            <Route path="bdashboard" element={<BDashboard />} />
+            <Route path="bdocuments" element={<BDocuments />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

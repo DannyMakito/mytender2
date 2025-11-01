@@ -21,6 +21,7 @@ import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { useAuth } from "@/context/AuthContext"
 import {
   Sidebar,
   SidebarContent,
@@ -31,12 +32,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "Makito",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+const getNavData = (userEmail) => ({
   navMain: [
     {
       title: "Dashboard",
@@ -141,11 +137,30 @@ const data = {
       icon: IconFileWord,
     },
   ],
-}
+})
 
 export function BidSidebar({
   ...props
 }) {
+  const { user } = useAuth()
+  
+  // Get user name from email or use default
+  const getUserName = () => {
+    if (user?.email) {
+      return user.email.split('@')[0] || 'User'
+    }
+    return 'User'
+  }
+
+  // Create user object with live data
+  const userData = {
+    name: getUserName(),
+    email: user?.email || '',
+    avatar: "/avatars/shadcn.jpg",
+  }
+
+  const data = getNavData(user?.email)
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -154,7 +169,7 @@ export function BidSidebar({
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">My Tender</span>
+                <span className="text-base font-semibold">My Tender Pro</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -166,7 +181,7 @@ export function BidSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
       
 
