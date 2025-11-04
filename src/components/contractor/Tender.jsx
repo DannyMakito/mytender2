@@ -45,13 +45,12 @@ export default function Tender() {
     }
 
     const newTender = {
-      tenderNo: form.tenderNo.trim(),
+      budget: form.tenderNo.trim(),
       title: form.title.trim(),
       description: form.description.trim(),
       department: form.department.trim() || "",
       province: form.province.trim() || "",
       category: form.category.trim() || "",
-      type: form.type.trim() || "",
       status: "OPEN",
       closingDate: form.closingDate || "",
       publishedDate: new Date().toISOString().slice(0, 10),
@@ -59,7 +58,7 @@ export default function Tender() {
 
     setTenders((t) => [newTender, ...t])
     setForm({
-      tenderNo: "",
+      budget: "",
       title: "",
       description: "",
       department: "",
@@ -97,12 +96,14 @@ export default function Tender() {
             </SheetHeader>
 
             <form onSubmit={(e) => { handleCreate(e); }} className="p-4 space-y-4">
+
+            <Input placeholder="Title" value={form.title} onChange={(e) => update("title", e.target.value)} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input placeholder="Tender No" value={form.tenderNo} onChange={(e) => update("tenderNo", e.target.value)} />
-                <Input placeholder="Department" value={form.department} onChange={(e) => update("department", e.target.value)} />
+                <Input placeholder="budget" value={form.budget} onChange={(e) => update("budget", e.target.value)} />
+                <Input placeholder="status" value={form.department} onChange={(e) => update("department", e.target.value)} />
               </div>
 
-              <Input placeholder="Title" value={form.title} onChange={(e) => update("title", e.target.value)} />
+              
 
               <textarea
                 className="w-full rounded-md border p-3 text-sm"
@@ -114,7 +115,7 @@ export default function Tender() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input placeholder="Province" value={form.province} onChange={(e) => update("province", e.target.value)} />
-                <Input placeholder="Category" value={form.category} onChange={(e) => update("category", e.target.value)} />
+                <Input placeholder="Document" value={form.category} onChange={(e) => update("category", e.target.value)} />
                 <Input placeholder="Type (e.g. Request for Quotation)" value={form.type} onChange={(e) => update("type", e.target.value)} />
               </div>
 
