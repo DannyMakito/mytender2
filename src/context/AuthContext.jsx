@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import supabase from '../../supabase-client'
+import supabase from '../../supabase-client.js'
 
 const AuthContext = createContext(null)
 
@@ -47,6 +47,8 @@ export function AuthProvider({ children }) {
         p_user_email: userEmail,
       })
 
+      let fetchedRole = null
+
       if (functionError) {
         // If function doesn't exist or fails, try direct select
         console.warn('Function get_user_role not available, trying direct select:', functionError.message)
@@ -60,16 +62,22 @@ export function AuthProvider({ children }) {
         if (error) {
           console.error('Error fetching role:', error)
           setRole(null)
+          fetchedRole = null
         } else {
-          setRole(data?.role || null)
+          fetchedRole = data?.role || null
+          setRole(fetchedRole)
         }
       } else {
         // Function succeeded, use the returned role
-        setRole(functionData || null)
+        fetchedRole = functionData || null
+        setRole(fetchedRole)
       }
+
+      return fetchedRole
     } catch (err) {
       console.error('Error fetching role:', err)
       setRole(null)
+      return null
     } finally {
       setLoading(false)
     }
@@ -165,13 +173,13 @@ export function AuthProvider({ children }) {
         throw new Error('Failed to sign in')
       }
 
-      // Fetch user role
-      await fetchUserRole(email)
+      // Fetch user role and wait for it
+      const userRole = await fetchUserRole(email)
 
       setUser(authData.user)
       setSession(authData.session)
 
-      return { success: true, user: authData.user }
+      return { success: true, user: authData.user, role: userRole }
     } catch (error) {
       console.error('Sign in error:', error)
       return { success: false, error: error.message }
@@ -194,10 +202,11 @@ export function AuthProvider({ children }) {
   }
 
   // Navigate based on role
-  const navigateByRole = (navigate) => {
-    if (role === 'client') {
+  const navigateByRole = (navigate, roleToUse = null) => {
+    const roleForNavigation = roleToUse !== null ? roleToUse : role
+    if (roleForNavigation === 'client') {
       navigate('/cdashboard')
-    } else if (role === 'pro') {
+    } else if (roleForNavigation === 'pro') {
       navigate('/bdashboard')
     } else {
       navigate('/')

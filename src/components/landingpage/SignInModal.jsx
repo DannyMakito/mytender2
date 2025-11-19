@@ -39,11 +39,9 @@ const SignInModal = ({ isOpen = false, onClose = () => {} }) => {
       const result = await signIn(email, password)
       
       if (result.success) {
-        // Wait a bit for role to be fetched, then navigate
-        setTimeout(() => {
-          navigateByRole(navigate)
-          close()
-        }, 100)
+        // Use the role returned from signIn directly for navigation
+        navigateByRole(navigate, result.role)
+        close()
       } else {
         setError(result.error || 'Sign in failed. Please check your credentials.')
       }
