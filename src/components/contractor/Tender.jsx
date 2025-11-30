@@ -257,6 +257,7 @@ export default function Tender() {
                     placeholder="Enter tender description"
                     value={form.description}
                     onChange={(e) => update("description", e.target.value)}
+                    required
                   />
                 </div>
 
@@ -267,11 +268,12 @@ export default function Tender() {
                       placeholder="Enter budget amount" 
                       value={form.budget} 
                       onChange={(e) => update("budget", e.target.value)} 
+                      required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Province</label>
-                    <Select value={form.province} onValueChange={(value) => update("province", value)}>
+                    <Select value={form.province} onValueChange={(value) => update("province", value)}  required>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select province" />
                       </SelectTrigger>
@@ -293,6 +295,7 @@ export default function Tender() {
                     value={form.closingDate}
                     onChange={(e) => update("closingDate", e.target.value)}
                     className="w-full rounded-md border px-3 py-2"
+                    required
                   />
                 </div>
 
