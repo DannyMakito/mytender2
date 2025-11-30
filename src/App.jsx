@@ -15,6 +15,7 @@ import BDocuments from "@/components/bidder/BDocuments"
 import { AuthProvider } from "@/context/AuthContext"
 import TenderBids from "@/components/contractor/TenderBids"
 import { Toaster } from "sonner"
+import Notifactions from "./components/Notifactions"
 
 function App() {
   return (
@@ -30,14 +31,17 @@ function App() {
             <Route path="tender" element={<Tender />} />
             <Route path="tender/:id/bids" element={<TenderBids />} />
             <Route path="cdocuments" element={<CDocuments />} />
+             <Route path="notifications" element={<Notifactions />} /> 
           </Route>
 
           {/* Bidder routes */}
           <Route path="/" element={<BidderLayout />}>
             <Route path="tenders" element={<Tenders />} />
             <Route path="tenders/:id" element={<TenderDetails />} />
+            <Route path="bidder-projects" element={<Projects />} />
             <Route path="bdashboard" element={<BDashboard />} />
             <Route path="bdocuments" element={<BDocuments />} />
+            <Route path="bnotifications" element={<Notifactions />} />
           </Route>
         </Routes>
         <Toaster position="top-right" richColors />

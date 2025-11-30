@@ -1,7 +1,7 @@
 import * as React from "react"
 import {
   IconCamera,
-  IconChartBar,
+  IconBell,
   IconDashboard,
   IconDatabase,
   IconFileAi,
@@ -22,6 +22,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import { useAuth } from "@/context/AuthContext"
+import { useNotifications } from "@/hooks/useNotifications"
 import {
   Sidebar,
   SidebarContent,
@@ -32,7 +33,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const getNavData = (userEmail) => ({
+const getNavData = (userEmail, unreadCount = 0) => ({
   navMain: [
     {
       title: "Dashboard",
@@ -54,6 +55,12 @@ const getNavData = (userEmail) => ({
       title: "Team",
       url: "#",
       icon: IconUsers,
+    },
+    {
+      title: "Notifications",
+      url: "/notifications",
+      icon: IconBell,
+      badge: unreadCount,
     },
   ],
   navClouds: [
@@ -139,6 +146,7 @@ export function AppSidebar({
   ...props
 }) {
   const { user } = useAuth()
+  const { unreadCount } = useNotifications()
   
   // Get user name from email or use default
   const getUserName = () => {
@@ -155,7 +163,7 @@ export function AppSidebar({
     avatar: "/avatars/shadcn.jpg",
   }
 
-  const data = getNavData(user?.email)
+  const data = getNavData(user?.email, unreadCount)
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
