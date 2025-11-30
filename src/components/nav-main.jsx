@@ -1,6 +1,7 @@
 import { IconCirclePlusFilled, IconMail } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Link } from "react-router-dom"
 import {
   SidebarGroup,
@@ -38,14 +39,34 @@ export function NavMain({
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild tooltip={item.title}>
                 {item.url && item.url.startsWith("/") ? (
-                  <Link to={item.url}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                  <Link to={item.url} className="relative w-full">
+                    <div className="flex items-center gap-2 flex-1">
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </div>
+                    {item.badge && item.badge > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute right-2 h-5 min-w-5 flex items-center justify-center px-1.5 text-xs"
+                      >
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </Badge>
+                    )}
                   </Link>
                 ) : (
-                  <a href={item.url}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                  <a href={item.url} className="relative w-full">
+                    <div className="flex items-center gap-2 flex-1">
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </div>
+                    {item.badge && item.badge > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute right-2 h-5 min-w-5 flex items-center justify-center px-1.5 text-xs"
+                      >
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </Badge>
+                    )}
                   </a>
                 )}
               </SidebarMenuButton>

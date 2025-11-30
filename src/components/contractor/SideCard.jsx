@@ -8,7 +8,10 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { CheckIcon } from 'lucide-react'
 
 export default function SideCard({ projects = [], selectedProjectId, setSelectedProjectId }) {
-  const project = useMemo(() => projects.find((p) => p.id === selectedProjectId) || projects[0] || { name: '', tasks: [] }, [projects, selectedProjectId])
+  const project = useMemo(() => {
+    const found = projects.find((p) => p.id === selectedProjectId) || projects[0] || null
+    return found ? { ...found, tasks: found.tasks || [] } : { name: '', tasks: [], icon: 'FiFolder' }
+  }, [projects, selectedProjectId])
 
   const stats = useMemo(() => {
     const tasks = project.tasks || []
@@ -92,10 +95,7 @@ export default function SideCard({ projects = [], selectedProjectId, setSelected
                   <div className="text-xs text-muted-foreground">IN PROGRESS</div>
                   <div className="font-semibold">{stats.inProgress}</div>
                 </div>
-                <div className="bg-muted/50 rounded-md p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">WAITING</div>
-                  <div className="font-semibold">{stats.waiting}</div>
-                </div>
+            
                 <div className="bg-muted/50 rounded-md p-3 text-sm">
                   <div className="text-xs text-muted-foreground">COMPLETED</div>
                   <div className="font-semibold">{stats.completed}</div>

@@ -2,11 +2,10 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'
-// icons for project picker
-import { FiFolder, FiBriefcase, FiCamera, FiCheckSquare, FiStar, FiFlag, FiDatabase, FiTarget } from 'react-icons/fi'
 import { DndContext, closestCenter, useDroppable } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useAuth } from '@/context/AuthContext'
 
 const columns = [
   { id: 'todo', title: 'Yet To Start' },
@@ -15,37 +14,63 @@ const columns = [
 ]
 
 const ProjectsArea = ({ project, addTask, updateTask, addProject, projects, selectedProjectId }) => {
+  const { role } = useAuth()
+  const isClient = role === 'client'
+  const isPro = role === 'pro'
+  
   const [sheetOpen, setSheetOpen] = useState(false)
   const [taskTitle, setTaskTitle] = useState('')
   const [taskDesc, setTaskDesc] = useState('')
+  const [taskStartDate, setTaskStartDate] = useState('')
+  const [taskEndDate, setTaskEndDate] = useState('')  
   const [taskColumn, setTaskColumn] = useState('todo')
   const [taskProjectId, setTaskProjectId] = useState(selectedProjectId || (project && project.id) || (projects && projects[0] && projects[0].id) || '')
-  const [taskPriorityColor, setTaskPriorityColor] = useState('yellow')
-  const [projectSheetOpen, setProjectSheetOpen] = useState(false)
-  const [projectName, setProjectName] = useState('')
-  const [projectIcon, setProjectIcon] = useState('FiFolder')
+  const [taskPriorityColor, setTaskPriorityColor] = useState('blue')
 
-  function handleCreate(e) {
+  async function handleCreate(e) {
     e.preventDefault()
-    if (!taskTitle.trim()) return
-    const newTask = { id: `t${Date.now()}`, title: taskTitle.trim(), description: taskDesc.trim(), status: taskColumn, priorityColor: taskPriorityColor }
+   
+    if (!taskTitle.trim()) {
+      alert('Please enter a task title')
+      return
+    }
+    if (!taskProjectId) {
+      alert('Please select a project')
+      return
+    }
+    
+    const newTask = { 
+      title: taskTitle.trim(), 
+      description: taskDesc.trim(), 
+      status: taskColumn || 'todo', 
+      priorityColor: taskPriorityColor || '', 
+      startDate: taskStartDate || null, 
+      endDate: taskEndDate || null 
+    }
+    
     // call addTask with projectId and task
     const targetProjectId = taskProjectId || (project && project.id)
-    addTask?.(targetProjectId, newTask)
+    await addTask?.(targetProjectId, newTask)
+    
     setTaskTitle('')
     setTaskDesc('')
+    setTaskStartDate('')
+    setTaskEndDate('')
+    setTaskPriorityColor('')
     setTaskColumn('todo')
-    setTaskPriorityColor('yellow')
     setSheetOpen(false)
-  }
+  } 
 
   const grouped = {
-    todo: project ? project.tasks.filter((t) => t.status === 'todo') : [],
-    inprogress: project ? project.tasks.filter((t) => t.status === 'inprogress') : [],
-    done: project ? project.tasks.filter((t) => t.status === 'done') : [],
+    todo: project ? (project.tasks || []).filter((t) => t.status === 'todo' || t.status === 'waiting') : [],
+    inprogress: project ? (project.tasks || []).filter((t) => t.status === 'inprogress') : [],
+    done: project ? (project.tasks || []).filter((t) => t.status === 'done' || t.status === 'completed') : [],
   }
 
   function handleDragEnd(event) {
+    // Only allow drag and drop for 'pro' role
+    if (isClient) return
+    
     const { active, over } = event
     if (!over) return
     const activeId = active.id
@@ -56,24 +81,34 @@ const ProjectsArea = ({ project, addTask, updateTask, addProject, projects, sele
       targetStatus = overId
     } else {
       // overId may be a task id; find that task to get its current status
-      const targetTask = project && project.tasks.find((t) => t.id === overId)
+      const targetTask = project && (project.tasks || []).find((t) => t.id === overId)
       if (targetTask) targetStatus = targetTask.status
     }
 
     if (!targetStatus) return
 
-    const task = project && project.tasks.find((t) => t.id === activeId)
+    const task = project && (project.tasks || []).find((t) => t.id === activeId)
     if (task && task.status !== targetStatus) {
-      const updated = { ...task, status: targetStatus }
+      const updated = { 
+        ...task, 
+        status: targetStatus,
+        priorityColor: task.priorityColor || task.priority_color || '',
+        startDate: task.startDate || task.start_date || null,
+        endDate: task.endDate || task.end_date || null,
+      }
       if (typeof updateTask === 'function') updateTask(project.id, updated)
     }
   }
 
   // Droppable column wrapper so columns accept drops and produce a column id as `over.id`
+  // Columns are still droppable even for clients (visual only, drag is disabled)
   function Column({ col, children }) {
-    const { setNodeRef, isOver } = useDroppable({ id: col.id })
+    const { setNodeRef, isOver } = useDroppable({ 
+      id: col.id,
+      disabled: isClient // Disable drop zones for client role
+    })
     return (
-      <div ref={setNodeRef} id={col.id} className={`bg-card rounded-lg border p-4 min-h-[300px] ${isOver ? 'ring-2 ring-offset-1 ring-green-200' : ''}`}>
+      <div ref={setNodeRef} id={col.id} className={`bg-card rounded-lg border p-4 min-h-[300px] ${isOver && !isClient ? 'ring-2 ring-offset-1 ring-green-200' : ''}`}>
         {children}
       </div>
     )
@@ -85,45 +120,13 @@ const ProjectsArea = ({ project, addTask, updateTask, addProject, projects, sele
         <h2 className="text-xl font-semibold">Projects</h2>
         <div className="flex items-center gap-2">
           <div className="text-sm text-muted-foreground">A↕ Sort</div>
-            <Sheet open={projectSheetOpen} onOpenChange={setProjectSheetOpen}>
-              <SheetTrigger asChild>
-                <Button size="sm" onClick={() => setProjectSheetOpen(true)}>Create Project</Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:w-3/4 sm:max-w-sm">
-                <SheetHeader>
-                  <SheetTitle>Create Project</SheetTitle>
-                </SheetHeader>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!projectName.trim()) return;
-                  const newProject = { id: `p${Date.now()}`, name: projectName.trim(), icon: projectIcon, tasks: [] };
-                  addProject?.(newProject);
-                  setProjectName('');
-                  setProjectIcon('FiFolder');
-                  setProjectSheetOpen(false);
-                }} className="p-4 space-y-4">
-                  <input className="w-full rounded-md border px-3 py-2" placeholder="Project name" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-2">Select Icon</div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[{key: 'FiFolder', Icon: FiFolder}, {key: 'FiBriefcase', Icon: FiBriefcase}, {key: 'FiCamera', Icon: FiCamera}, {key: 'FiCheckSquare', Icon: FiCheckSquare}, {key: 'FiStar', Icon: FiStar}, {key: 'FiFlag', Icon: FiFlag}, {key: 'FiDatabase', Icon: FiDatabase}, {key: 'FiTarget', Icon: FiTarget}].map(({key, Icon}) => (
-                        <button key={key} type="button" onClick={() => setProjectIcon(key)} className={`p-2 rounded-md border ${projectIcon === key ? 'ring-2 ring-offset-1 ring-green-400' : ''}`} aria-label={`Select ${key}`}>
-                          <Icon size={18} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <SheetFooter>
-                    <div className="flex gap-2"><Button type="submit" className="w-full">Create Project</Button></div>
-                  </SheetFooter>
-                </form>
-              </SheetContent>
-            </Sheet>
-            <div className="w-2" />
+          {/* Note: Projects are automatically created when bids are approved */}
+          {/* Only show "Add New Task" button for 'pro' role */}
+          {isPro && (
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetTrigger asChild>
-              <Button size="sm" variant="outline" onClick={() => setSheetOpen(true)}>Add New Task</Button>
-            </SheetTrigger>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline" onClick={() => setSheetOpen(true)}>Add New Task</Button>
+              </SheetTrigger>
             <SheetContent side="right" className="w-full sm:w-3/4 sm:max-w-sm">
               <SheetHeader>
                 <SheetTitle>Create Task</SheetTitle>
@@ -131,29 +134,43 @@ const ProjectsArea = ({ project, addTask, updateTask, addProject, projects, sele
               <form onSubmit={handleCreate} className="p-4 space-y-4">
                 <input className="w-full rounded-md border px-3 py-2" placeholder="Task title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} />
                 <textarea rows={3} className="w-full rounded-md border px-3 py-2" placeholder="Task description" value={taskDesc} onChange={(e) => setTaskDesc(e.target.value)} />
+               
                 <div className="grid grid-cols-2 gap-2">
                   <select className="w-full rounded-md border px-3 py-2" value={taskProjectId} onChange={(e) => setTaskProjectId(e.target.value)}>
+                    <option value="">Select Project</option>
                     {(projects || []).map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
+                 
                   <select className="w-full rounded-md border px-3 py-2" value={taskPriorityColor} onChange={(e) => setTaskPriorityColor(e.target.value)}>
-                    <option value="yellow">Low (Yellow)</option>
-                    <option value="red">High (Red)</option>
-                    <option value="blue">Medium (Blue)</option>
+                
+                    <option value="blue">low</option>
+                    <option value="yellow">medium </option>
+                    <option value="red">High </option>
+              
                   </select>
                 </div>
                 <select className="w-full rounded-md border px-3 py-2" value={taskColumn} onChange={(e) => setTaskColumn(e.target.value)}>
+              
                   <option value="todo">Yet To Start</option>
                   <option value="inprogress">In Progress</option>
                   <option value="done">Completed</option>
                 </select>
+
+                <div className="text-sm text-muted-foreground mb-2">Start and End Date</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="date" className="w-full rounded-md border px-3 py-2" value={taskStartDate} onChange={(e) => setTaskStartDate(e.target.value)} />
+                  <input type="date" className="w-full rounded-md border px-3 py-2" value={taskEndDate} onChange={(e) => setTaskEndDate(e.target.value)} />
+                </div>
+                
                 <SheetFooter>
                   <div className="flex gap-2"><Button type="submit" className="w-full">Create Task</Button></div>
                 </SheetFooter>
               </form>
             </SheetContent>
           </Sheet>
+          )}
         </div>
       </div>
 
@@ -178,23 +195,32 @@ const ProjectsArea = ({ project, addTask, updateTask, addProject, projects, sele
               ) : (
                 <SortableContext items={grouped[col.id].map((t) => t.id)} strategy={verticalListSortingStrategy}>
                 {grouped[col.id].map((t) => {
+                  const priorityColor = t.priorityColor || t.priority_color || ''
                   const badgeMap = {
                     yellow: { cls: 'bg-yellow-100 text-yellow-800', label: 'Medium' },
                     red: { cls: 'bg-red-100 text-red-800', label: 'High' },
                     blue: { cls: 'bg-blue-100 text-blue-800', label: 'Low' },
                   }
-                  const badge = badgeMap[t.priorityColor] || { cls: 'bg-gray-100 text-gray-800', label: 'None' }
+                  const badge = badgeMap[priorityColor] || { cls: 'bg-gray-100 text-gray-800', label: 'None' }
+                  const startDate = t.startDate || t.start_date
+                  const endDate = t.endDate || t.end_date
 
-                  // make each card draggable via useSortable
+                  // make each card draggable via useSortable (only for 'pro' role)
                   function DraggableCard({ task }) {
-                    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
+                    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
+                      id: task.id,
+                      disabled: isClient // Disable drag for client role
+                    })
                     const style = {
                       transform: CSS.Transform.toString(transform),
                       transition,
                       opacity: isDragging ? 0.8 : 1,
+                      cursor: isClient ? 'default' : 'grab',
                     }
+                    // Only apply drag listeners for 'pro' role
+                    const dragProps = isClient ? {} : { ...attributes, ...listeners }
                     return (
-                      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+                      <div ref={setNodeRef} style={style} {...dragProps}>
                         <Card key={task.id} className="rounded-lg border relative overflow-hidden">
                           <div className="absolute top-3 left-3">
                             <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md ${badge.cls}`}>
@@ -208,13 +234,32 @@ const ProjectsArea = ({ project, addTask, updateTask, addProject, projects, sele
                           <CardHeader className="pt-10 px-4">
                             <CardTitle className="text-sm font-semibold">{task.title}</CardTitle>
                           </CardHeader>
-                          <CardContent className="px-4 pb-4 text-sm text-muted-foreground">{task.description || task.desc || 'No description.'}</CardContent>
+                          <CardContent className="px-4 pb-4 text-sm text-muted-foreground">
+                            <div>{task.description || task.desc || 'No description.'}</div>
+                            {(startDate || endDate) && (
+                              <div className="text-sm bg-red-100 text-black px-2 py-1 rounded mt-2">
+                                {startDate 
+                                  ? new Date(startDate).toLocaleDateString("en-GB", {
+                                      day: "numeric",
+                                      month: "short",
+                                    })
+                                  : 'No start date'}{" "}
+                                -{" "}
+                                {endDate 
+                                  ? new Date(endDate).toLocaleDateString("en-GB", {
+                                      day: "numeric",
+                                      month: "short",
+                                    })
+                                  : 'No end date'}
+                              </div>
+                            )}
+                          </CardContent>
                         </Card>
                       </div>
                     )
                   }
 
-                  return <DraggableCard key={t.id} task={t} />
+                  return <DraggableCard key={t.id} task={{ ...t, priorityColor, startDate, endDate }} />
                 })}
                 </SortableContext>
               )}

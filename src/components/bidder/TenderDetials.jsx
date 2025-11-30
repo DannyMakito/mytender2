@@ -43,12 +43,14 @@ export default function TenderDetails() {
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [bidError, setBidError] = useState("")
+  const [userBid, setUserBid] = useState(null)
 
   useEffect(() => {
-    if (id) {
+    if (id && user?.email) {
       fetchTenderDetails()
+      fetchUserBid()
     }
-  }, [id])
+  }, [id, user?.email])
 
   async function fetchTenderDetails() {
     try {
@@ -70,6 +72,16 @@ export default function TenderDetails() {
     }
   }
 
+  async function fetchUserBid() {
+    const { data, error } = await supabase
+      .from('bids')
+      .select('*')
+      .eq('tender_id', id)
+      .eq('bidder', user.email)
+      .maybeSingle()
+    if (!error) setUserBid(data)
+  }
+
   function handleViewDocument() {
     if (tender?.document_url) {
       window.open(tender.document_url, '_blank')
@@ -79,6 +91,10 @@ export default function TenderDetails() {
   function handleBid() {
     if (!user?.email) {
       setError("You must be logged in to submit a bid")
+      return
+    }
+    if (userBid) {
+      toast.info('You have already placed a bid on this tender.')
       return
     }
     setBidModalOpen(true)
@@ -331,9 +347,10 @@ export default function TenderDetails() {
           <Button 
             onClick={handleBid}
             className="flex-1"
-            disabled={tender.status === 'closed' || (days !== null && days < 0)}
+            disabled={tender.status === 'closed' || (days !== null && days < 0) || !!userBid}
+            style={userBid ? {backgroundColor:'#4a5565', color:'#ffff', cursor: 'not-allowed', borderColor:'#e5e7eb'} : {}}
           >
-             Bid
+            {userBid ? 'Bid Already Placed' : 'Bid'}
           </Button>
         </CardFooter>
       </Card>
