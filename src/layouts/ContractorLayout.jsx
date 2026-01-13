@@ -10,6 +10,7 @@ const CONTRACTOR_ROUTES = [
   '/cdashboard',
   '/projects',
   '/tender',
+  '/teams',
   '/cdocuments',
   '/notifications'
 ]
@@ -17,7 +18,7 @@ const CONTRACTOR_ROUTES = [
 // Note: /notifications is shared but ContractorLayout handles it for 'client' role
 
 // Shared routes that both user types can access (need role-based check)
-const SHARED_ROUTES = ['/notifications']
+const SHARED_ROUTES = ['/notifications', '/teams']
 
 // Helper to check if a path is a contractor route
 const isContractorRoute = (pathname, userRole) => {
@@ -39,10 +40,10 @@ const isContractorRoute = (pathname, userRole) => {
 export default function ContractorLayout() {
   const location = useLocation()
   const { role, loading, user } = useAuth()
-  
+
   const isSharedRoute = SHARED_ROUTES.includes(location.pathname)
   const shouldRender = isContractorRoute(location.pathname, role)
-  
+
   // For shared routes like /notifications
   if (isSharedRoute) {
     // If loading, return null to let BidderLayout handle the loading state
@@ -50,14 +51,14 @@ export default function ContractorLayout() {
     if (loading) {
       return null
     }
-    
+
     // Only render if user is definitely a client
     // If role is null/undefined or not 'client', let BidderLayout handle it
     if (!role || role !== 'client') {
       return null
     }
   }
-  
+
   // For non-shared routes, check shouldRender
   if (!isSharedRoute && !shouldRender) {
     return null
