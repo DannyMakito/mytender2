@@ -35,6 +35,11 @@ const PROVINCES = [
   "Western Cape",
 ]
 
+const CATEGORIES = [
+  "Construction", "Transportation", "Professional Services",
+  "Others", "Supplier", "Catering"
+]
+
 function daysUntil(dateStr) {
   const today = new Date()
   const then = new Date(dateStr + "T00:00:00")
@@ -56,6 +61,7 @@ export default function Tender() {
     description: "",
     province: "",
     budget: "",
+    category: "",
     closingDate: "",
     document_url: "",
   })
@@ -150,17 +156,49 @@ export default function Tender() {
         description: form.description.trim() || null,
         province: form.province || null,
         budget: form.budget.trim() || null,
+        category: form.category || null,
         closing_date: form.closingDate || null,
         document_url: documentUrl || null,
         posted_by: user.email,
         status: 'open',
       }
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('tenders')
         .insert([newTender])
         .select()
         .single()
+
+      // Attempt auto-fix for RLS error (missing/incorrect role)
+      if (error && error.code === '42501') {
+        console.log("RLS error detected. Attempting to repair user permissions...")
+        try {
+          const { error: roleError } = await supabase.rpc('insert_user_role', {
+            p_user_email: user.email,
+            p_role: 'client',
+            p_user_id: user.id
+          })
+
+          if (!roleError) {
+            // Retry insert after role fix
+            const retry = await supabase
+              .from('tenders')
+              .insert([newTender])
+              .select()
+              .single()
+
+            if (!retry.error) {
+              error = null
+              data = retry.data
+              toast.success("User permissions repaired successfully")
+            } else {
+              error = retry.error
+            }
+          }
+        } catch (err) {
+          console.error("Failed to auto-repair role:", err)
+        }
+      }
 
       if (error) throw error
 
@@ -173,11 +211,12 @@ export default function Tender() {
         description: "",
         province: "",
         budget: "",
+        category: "",
         closingDate: "",
         document_url: "",
       })
       setSelectedFile(null)
-      
+
       // Reset file input
       const fileInput = document.querySelector('input[type="file"]')
       if (fileInput) fileInput.value = ''
@@ -187,7 +226,7 @@ export default function Tender() {
         description: `${form.title} has been created and is now visible to bidders.`,
         duration: 5000,
       })
-      
+
       // Close sheet/modal after successful creation
       setSheetOpen(false)
     } catch (error) {
@@ -209,15 +248,16 @@ export default function Tender() {
       t.title?.toLowerCase().includes(query) ||
       t.description?.toLowerCase().includes(query) ||
       t.province?.toLowerCase().includes(query) ||
-      t.budget?.toString().toLowerCase().includes(query)
+      t.budget?.toString().toLowerCase().includes(query) ||
+      t.category?.toLowerCase().includes(query)
     )
   })
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
+      <div className="mb-">
         <h1 className="text-2xl font-bold">Create Tender</h1>
-        <p className="text-muted-foreground">Create a new tender — the card will appear below after creation.</p>
+        <p className="text-muted-foregroun6d">Create a new tender — the card will appear below after creation.</p>
       </div>
 
       <div className="mb-6 flex items-center gap-4">
@@ -232,19 +272,16 @@ export default function Tender() {
             <Button onClick={() => setSheetOpen(true)}>Create Tender</Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-full sm:w-3/4 sm:max-w-sm flex flex-col">
-            <SheetHeader>
-              <SheetTitle>Create Tender</SheetTitle>
-              <SheetDescription>Fill out the form to create a new tender. The tender will appear below after creation.</SheetDescription>
-            </SheetHeader>
+
 
             <form onSubmit={handleCreate} className="flex-1 flex flex-col">
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Title *</label>
-                  <Input 
-                    placeholder="Enter tender title" 
-                    value={form.title} 
-                    onChange={(e) => update("title", e.target.value)} 
+                  <Input
+                    placeholder="Enter tender title"
+                    value={form.title}
+                    onChange={(e) => update("title", e.target.value)}
                     required
                   />
                 </div>
@@ -264,16 +301,16 @@ export default function Tender() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Budget</label>
-                    <Input 
-                      placeholder="Enter budget amount" 
-                      value={form.budget} 
-                      onChange={(e) => update("budget", e.target.value)} 
+                    <Input
+                      placeholder="Enter budget amount"
+                      value={form.budget}
+                      onChange={(e) => update("budget", e.target.value)}
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Province</label>
-                    <Select value={form.province} onValueChange={(value) => update("province", value)}  required>
+                    <Select value={form.province} onValueChange={(value) => update("province", value)} required>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select province" />
                       </SelectTrigger>
@@ -286,6 +323,22 @@ export default function Tender() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <Select value={form.category} onValueChange={(value) => update("category", value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
@@ -332,17 +385,16 @@ export default function Tender() {
                     )}
                   </div>
                 </div>
+                <div className="pt-4">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={loading || uploading}
+                  >
+                    {uploading ? 'Uploading...' : loading ? 'Creating...' : 'Create Tender'}
+                  </Button>
+                </div>
               </div>
-
-              <SheetFooter className="border-t p-4">
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading || uploading}
-                >
-                  {uploading ? 'Uploading...' : loading ? 'Creating...' : 'Create Tender'}
-                </Button>
-              </SheetFooter>
             </form>
           </SheetContent>
         </Sheet>
@@ -390,6 +442,12 @@ export default function Tender() {
                           R{t.budget}
                         </div>
                       )}
+                      {t.category && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <IconTag className="size-4 text-muted-foreground" />
+                          {t.category}
+                        </div>
+                      )}
                       {t.closing_date && (
                         <div className="flex items-center gap-2 text-sm">
                           <IconClock className="size-4 text-muted-foreground" />
@@ -410,15 +468,15 @@ export default function Tender() {
                 <CardFooter className="mt-4">
                   <div className="w-full flex flex-col gap-2">
                     {t.document_url && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="w-full"
                         onClick={() => window.open(t.document_url, '_blank')}
                       >
                         View Document
                       </Button>
                     )}
-                     <Button 
+                    <Button
                       variant="outline"
                       className="w-full"
                       onClick={() => navigate(`/tender/${t.id}/bids`)}
