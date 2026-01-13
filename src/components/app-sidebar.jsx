@@ -45,7 +45,7 @@ const getNavData = (userEmail, unreadCount = 0) => ({
       url: "/tender",
       icon: IconListDetails,
     },
-   
+
     {
       title: "Projects",
       url: "/projects",
@@ -53,7 +53,7 @@ const getNavData = (userEmail, unreadCount = 0) => ({
     },
     {
       title: "Team",
-      url: "#",
+      url: "/teams",
       icon: IconUsers,
     },
     {
@@ -147,7 +147,7 @@ export function AppSidebar({
 }) {
   const { user } = useAuth()
   const { unreadCount } = useNotifications()
-  
+
   // Get user name from email or use default
   const getUserName = () => {
     if (user?.email) {
@@ -185,7 +185,7 @@ export function AppSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        
+
         <NavUser user={userData} />
       </SidebarFooter>
 
