@@ -15,6 +15,7 @@ const BIDDER_ROUTES = [
   '/bdashboard',
   '/tenders',
   '/bidder-projects',
+  '/teams',
   '/bdocuments',
   '/bnotifications'
 ]
@@ -22,7 +23,7 @@ const BIDDER_ROUTES = [
 // Note: /bnotifications is bidder-specific, /notifications is shared (handled separately)
 
 // Shared routes that both user types can access (need role-based check)
-const SHARED_ROUTES = ['/notifications']
+const SHARED_ROUTES = ['/notifications', '/teams']
 
 // Helper to check if a path is a bidder route
 const isBidderRoute = (pathname, userRole) => {
@@ -44,10 +45,10 @@ const isBidderRoute = (pathname, userRole) => {
 export default function BidderLayout() {
   const location = useLocation()
   const { role, loading, user } = useAuth()
-  
+
   const isSharedRoute = SHARED_ROUTES.includes(location.pathname)
   const shouldRender = isBidderRoute(location.pathname, role)
-  
+
   // For shared routes like /notifications
   if (isSharedRoute) {
     // If still loading role and user is authenticated, show loading state
@@ -69,7 +70,7 @@ export default function BidderLayout() {
         </SidebarProvider>
       )
     }
-    
+
     // If user is authenticated and role is 'client', don't render (let ContractorLayout handle it)
     if (user && role === 'client') {
       alert('user is authenticated and role is client')
@@ -77,7 +78,7 @@ export default function BidderLayout() {
       console.log(user);
       return null
     }
-    
+
     // If user is authenticated, always render to prevent blank page
     // This is a fallback to ensure we never show blank page when user clicks from bid-sidebar
     if (user) {
@@ -99,7 +100,7 @@ export default function BidderLayout() {
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",
           "--header-height": "calc(var(--spacing) * 12)",
-        } 
+        }
       }
     >
       <BidSidebar variant="inset" />

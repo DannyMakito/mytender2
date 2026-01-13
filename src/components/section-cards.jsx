@@ -31,21 +31,21 @@ export function SectionCards() {
 
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Tedners</CardDescription>
+          <CardDescription>Awarded Tedners</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             12
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Current  active Tedners
+             Tedners approved
           </div>
         </CardFooter>
       </Card>
 
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Draft Tedners</CardDescription>
+          <CardDescription> Disapproved Tedners</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             5
           </CardTitle>
@@ -53,7 +53,7 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            draft tenders 
+            rejected tenders
           </div>
          
         </CardFooter>
