@@ -12,10 +12,13 @@ import BidderLayout from "./components/bidder/BidderLayout"
 import BDashboard from "@/components/bidder/BDashboard"
 import CDocuments from "@/components/contractor/CDocuments"
 import BDocuments from "@/components/bidder/BDocuments"
+import MainLayout from "@/layouts/MainLayout"
 import { AuthProvider } from "@/context/AuthContext"
 import TenderBids from "@/components/contractor/TenderBids"
 import { Toaster } from "sonner"
 import Notifactions from "./components/Notifactions"
+import Onboarding from "@/components/onboarding/Onboarding"
+import TeamsPage from "@/components/teams/TeamsPage"
 
 function App() {
   return (
@@ -23,19 +26,22 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/onboarding" element={<Onboarding />} />
 
-          {/* Contractor routes rendered inside ContractorLayout so sidebar/header persist */}
-          <Route path="/" element={<ContractorLayout />}>
+          {/* Authenticated Routes wrapped in MainLayout */}
+          <Route element={<MainLayout />}>
+            {/* Shared */}
+            <Route path="teams" element={<TeamsPage />} />
+            <Route path="notifications" element={<Notifactions />} />
+
+            {/* Contractor Routes */}
             <Route path="cdashboard" element={<CDashboard />} />
             <Route path="projects" element={<Projects />} />
             <Route path="tender" element={<Tender />} />
             <Route path="tender/:id/bids" element={<TenderBids />} />
             <Route path="cdocuments" element={<CDocuments />} />
-             <Route path="notifications" element={<Notifactions />} /> 
-          </Route>
 
-          {/* Bidder routes */}
-          <Route path="/" element={<BidderLayout />}>
+            {/* Bidder Routes */}
             <Route path="tenders" element={<Tenders />} />
             <Route path="tenders/:id" element={<TenderDetails />} />
             <Route path="bidder-projects" element={<Projects />} />

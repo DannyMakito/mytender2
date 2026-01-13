@@ -48,7 +48,7 @@ const getNavData = (userEmail, unreadCount = 0) => ({
     {
       title: "Notifications",
       url: "/bnotifications",
-      icon:  IconBell,
+      icon: IconBell,
       badge: unreadCount,
     },
     {
@@ -58,7 +58,7 @@ const getNavData = (userEmail, unreadCount = 0) => ({
     },
     {
       title: "Team",
-      url: "#",
+      url: "/teams",
       icon: IconUsers,
     },
   ],
@@ -146,7 +146,7 @@ export function BidSidebar({
 }) {
   const { user } = useAuth()
   const { unreadCount } = useNotifications()
-  
+
   // Get user name from email or use default
   const getUserName = () => {
     if (user?.email) {
@@ -186,7 +186,7 @@ export function BidSidebar({
       <SidebarFooter>
         <NavUser user={userData} />
       </SidebarFooter>
-      
+
 
     </Sidebar>
   );
