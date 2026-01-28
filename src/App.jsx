@@ -19,6 +19,7 @@ import { Toaster } from "sonner"
 import Notifactions from "./components/Notifactions"
 import Onboarding from "@/components/onboarding/Onboarding"
 import TeamsPage from "@/components/teams/TeamsPage"
+import ADashboard from "@/components/admin/ADashboard"
 
 function App() {
   return (
@@ -48,6 +49,9 @@ function App() {
             <Route path="bdashboard" element={<BDashboard />} />
             <Route path="bdocuments" element={<BDocuments />} />
             <Route path="bnotifications" element={<Notifactions />} />
+
+            {/* Admin Routes */}
+            <Route path="adashboard" element={<ADashboard />} />
           </Route>
         </Routes>
         <Toaster position="top-right" richColors />

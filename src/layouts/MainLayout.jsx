@@ -2,6 +2,7 @@ import React from "react"
 import { useAuth } from "@/context/AuthContext"
 import ContractorLayout from "./ContractorLayout"
 import BidderLayout from "@/components/bidder/BidderLayout"
+import AdminLayout from "./AdminLayout"
 import { Outlet } from "react-router-dom"
 
 export default function MainLayout() {
@@ -31,6 +32,8 @@ export default function MainLayout() {
         return <ContractorLayout />
     } else if (role === 'pro') {
         return <BidderLayout />
+    } else if (role === 'admin') {
+        return <AdminLayout />
     }
 
     // Fallback if role is not set yet or invalid

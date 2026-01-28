@@ -11,6 +11,17 @@ export function AuthProvider({ children }) {
 
   // Initialize auth state
   useEffect(() => {
+    // Check for dummy admin in localStorage first
+    const dummyAdmin = localStorage.getItem('dummyAdmin')
+    if (dummyAdmin) {
+      const adminUser = JSON.parse(dummyAdmin)
+      setUser(adminUser)
+      setRole('admin')
+      setSession({ user: adminUser })
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -52,7 +63,7 @@ export function AuthProvider({ children }) {
       if (functionError) {
         // If function doesn't exist or fails, try direct select
         console.warn('Function get_user_role not available, trying direct select:', functionError.message)
-        
+
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
@@ -106,7 +117,7 @@ export function AuthProvider({ children }) {
       // Add role to user_roles table
       // Try using the database function first (if it exists), otherwise try direct insert
       let roleError = null
-      
+
       // First, try using the database function (recommended approach)
       const { error: functionError } = await supabase.rpc('insert_user_role', {
         p_user_email: email,
@@ -117,7 +128,7 @@ export function AuthProvider({ children }) {
       if (functionError) {
         // If function doesn't exist or fails, try direct insert
         console.warn('Function insert_user_role not available, trying direct insert:', functionError.message)
-        
+
         const { error: insertError } = await supabase
           .from('user_roles')
           .insert({
@@ -125,7 +136,7 @@ export function AuthProvider({ children }) {
             role: selectedRole,
             user_id: authData.user.id,
           })
-        
+
         roleError = insertError
       }
 
@@ -136,12 +147,12 @@ export function AuthProvider({ children }) {
           details: roleError.details,
           hint: roleError.hint
         })
-        
+
         // If it's an RLS error, provide helpful message
         if (roleError.code === '42501' || roleError.message?.includes('policy') || roleError.message?.includes('permission')) {
           throw new Error('Database permissions issue. Please run the SQL setup script (supabase-setup-user-roles.sql) in your Supabase SQL Editor to configure proper permissions.')
         }
-        
+
         // Return the actual error message for debugging
         const errorMessage = roleError.message || roleError.details || 'Failed to assign role. Please try again.'
         throw new Error(errorMessage)
@@ -162,6 +173,20 @@ export function AuthProvider({ children }) {
   // Sign in function
   const signIn = async (email, password) => {
     try {
+      // Dummy Admin check
+      if (email === 'admin@mytender.com' && password === 'adminpassword123') {
+        const adminUser = {
+          id: 'admin-dummy-id',
+          email: 'admin@mytender.com',
+          role: 'admin'
+        }
+        localStorage.setItem('dummyAdmin', JSON.stringify(adminUser))
+        setUser(adminUser)
+        setRole('admin')
+        setSession({ user: adminUser })
+        return { success: true, user: adminUser, role: 'admin' }
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -189,6 +214,14 @@ export function AuthProvider({ children }) {
   // Sign out function
   const signOut = async () => {
     try {
+      if (user?.id === 'admin-dummy-id') {
+        localStorage.removeItem('dummyAdmin')
+        setUser(null)
+        setRole(null)
+        setSession(null)
+        return
+      }
+
       const { error } = await supabase.auth.signOut()
       if (error) throw error
 
@@ -208,6 +241,8 @@ export function AuthProvider({ children }) {
       navigate('/cdashboard')
     } else if (roleForNavigation === 'pro') {
       navigate('/bdashboard')
+    } else if (roleForNavigation === 'admin') {
+      navigate('/adashboard')
     } else {
       navigate('/')
     }
