@@ -158,6 +158,20 @@ export function AuthProvider({ children }) {
         throw new Error(errorMessage)
       }
 
+      // Also create an initial profile entry
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          role: selectedRole,
+          onboarding_completed: false
+        })
+
+      if (profileError) {
+        console.warn('Error creating profile entry:', profileError.message)
+        // We don't throw here to avoid blocking sign up if profile insert fails (maybe it already exists)
+      }
+
       // Update local state
       setUser(authData.user)
       setRole(selectedRole)
@@ -174,10 +188,10 @@ export function AuthProvider({ children }) {
   const signIn = async (email, password) => {
     try {
       // Dummy Admin check
-      if (email === 'admin@mytender.com' && password === 'adminpassword123') {
+      if (email === 'admin2@mytender.com' && password === 'adminpassword123') {
         const adminUser = {
           id: 'admin-dummy-id',
-          email: 'admin@mytender.com',
+          email: 'admin2@mytender.com',
           role: 'admin'
         }
         localStorage.setItem('dummyAdmin', JSON.stringify(adminUser))
@@ -248,6 +262,154 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Admin: Create a new user with admin role
+  const createAdmin = async (email, password) => {
+    try {
+      if (role !== 'admin') throw new Error('Unauthorized')
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+
+      if (authError) throw authError
+
+      const { error: roleError } = await supabase.rpc('insert_user_role', {
+        p_user_email: email,
+        p_role: 'admin',
+        p_user_id: authData.user.id,
+      })
+
+      if (roleError) throw roleError
+
+      // Also create a profile entry for the new admin
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          role: 'admin',
+          onboarding_completed: true
+        })
+
+      if (profileError) throw profileError
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error creating admin:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Admin: Update a user's role
+  const updateUserRole = async (userEmail, newRole, userId) => {
+    try {
+      if (role !== 'admin') throw new Error('Unauthorized')
+
+      // Update in user_roles
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .update({ role: newRole })
+        .eq('user_email', userEmail)
+
+      if (roleError) throw roleError
+
+      // Update in profiles
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId)
+
+      if (profileError) throw profileError
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating role:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Admin: Fetch all users and their roles using RPC (bypasses RLS issues)
+  const getAllUsers = async () => {
+    try {
+      if (role !== 'admin') throw new Error('Unauthorized')
+
+      const { data, error } = await supabase.rpc('get_admin_users_list')
+
+      if (error) throw error
+
+      // Map the renamed columns from RPC to frontend expected format
+      const users = data.map(row => ({
+        id: row.user_id,
+        email: row.user_email,
+        role: row.user_role,
+        created_at: row.user_created_at,
+        onboarding_completed: row.user_onboarding_completed
+      }))
+
+      return { success: true, users }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Admin: Fetch single user profile
+  const getUserProfile = async (userId) => {
+    try {
+      if (role !== 'admin') throw new Error('Unauthorized')
+
+      const { data: profile, error: pError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (pError) throw pError
+
+      // Fetch email from user_roles
+      const { data: roleData, error: rError } = await supabase
+        .from('user_roles')
+        .select('user_email')
+        .eq('user_id', userId)
+        .single()
+
+      if (rError && rError.code !== 'PGRST116') { // Ignore "not found" error for email
+        console.warn('Could not find email in user_roles for ID:', userId)
+      }
+
+      return {
+        success: true,
+        profile: {
+          ...profile,
+          email: roleData ? roleData.user_email : 'N/A'
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Admin: Delete user (Note: This usually needs a custom edge function or direct auth call if possible)
+  const deleteUserProfile = async (userId) => {
+    try {
+      if (role !== 'admin') throw new Error('Unauthorized')
+
+      // First delete from profiles and user_roles (handled by cascade if set up, or manual)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId)
+
+      if (profileError) throw profileError
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error deleting profile:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
   const value = {
     user,
     role,
@@ -258,6 +420,11 @@ export function AuthProvider({ children }) {
     signOut,
     fetchUserRole,
     navigateByRole,
+    createAdmin,
+    updateUserRole,
+    getAllUsers,
+    getUserProfile,
+    deleteUserProfile,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

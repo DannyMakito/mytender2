@@ -113,7 +113,7 @@ export function AdminSidebar({
 
     const userData = {
         name: getUserName(),
-        email: user?.email || 'admin@mytender.com',
+        email: user?.email || 'admin2@mytender.com',
         avatar: "/avatars/admin.jpg",
     }
 

@@ -20,6 +20,9 @@ import Notifactions from "./components/Notifactions"
 import Onboarding from "@/components/onboarding/Onboarding"
 import TeamsPage from "@/components/teams/TeamsPage"
 import ADashboard from "@/components/admin/ADashboard"
+import AdminLayout from "@/layouts/AdminLayout"
+import UserManagement from "@/components/admin/UserManagement"
+import UserProfile from "@/components/admin/UserProfile"
 
 function App() {
   return (
@@ -49,9 +52,12 @@ function App() {
             <Route path="bdashboard" element={<BDashboard />} />
             <Route path="bdocuments" element={<BDocuments />} />
             <Route path="bnotifications" element={<Notifactions />} />
+          </Route>
 
-            {/* Admin Routes */}
+          <Route element={<AdminLayout />}>
             <Route path="adashboard" element={<ADashboard />} />
+            <Route path="admin/users" element={<UserManagement />} />
+            <Route path="admin/users/:id" element={<UserProfile />} />
           </Route>
         </Routes>
         <Toaster position="top-right" richColors />

@@ -36,6 +36,19 @@ CREATE POLICY "Users can update their own profile" ON public.profiles
 CREATE POLICY "Users can insert their own profile" ON public.profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
+-- Admin Policies
+CREATE POLICY "Admins can view all profiles" ON public.profiles
+  FOR SELECT TO authenticated
+  USING (public.is_admin());
+
+CREATE POLICY "Admins can update all profiles" ON public.profiles
+  FOR UPDATE TO authenticated
+  USING (public.is_admin());
+
+CREATE POLICY "Admins can delete all profiles" ON public.profiles
+  FOR DELETE TO authenticated
+  USING (public.is_admin());
+
 -- Add category column to tenders table
 DO $$
 BEGIN
