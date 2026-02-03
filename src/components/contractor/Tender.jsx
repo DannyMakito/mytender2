@@ -54,7 +54,8 @@ export default function Tender() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const { user } = useAuth()
+  const { user, getMyProfile } = useAuth()
+  const [accountStatus, setAccountStatus] = useState(null)
 
   const [form, setForm] = useState({
     title: "",
@@ -72,8 +73,18 @@ export default function Tender() {
   useEffect(() => {
     if (user?.email) {
       fetchTenders()
+      checkAccountStatus()
     }
   }, [user?.email])
+
+  const checkAccountStatus = async () => {
+    if (!user) return
+    const result = await getMyProfile()
+    console.log('Tender Check Status:', result)
+    if (result.success) {
+      setAccountStatus(result.profile?.account_status)
+    }
+  }
 
   const fetchTenders = async () => {
     try {
@@ -267,10 +278,20 @@ export default function Tender() {
             <Input placeholder="Search tenders, departments, or keywords..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
           </div>
         </div>
+        {accountStatus === 'approved' ? (
+          <Button onClick={() => setSheetOpen(true)}>Create Tender</Button>
+        ) : (
+          <Button
+            variant="secondary"
+            className="opacity-50 cursor-not-allowed"
+            onClick={() => toast.error("Account Verification Required", {
+              description: "Your account must be approved by an admin before you can create tenders. Please check your profile status."
+            })}
+          >
+            Create Tender (Locked)
+          </Button>
+        )}
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger asChild>
-            <Button onClick={() => setSheetOpen(true)}>Create Tender</Button>
-          </SheetTrigger>
           <SheetContent side="right" className="w-full sm:w-3/4 sm:max-w-sm flex flex-col">
 
 

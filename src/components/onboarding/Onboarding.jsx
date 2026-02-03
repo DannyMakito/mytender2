@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Check, User, Building, MapPin, Target, Bell, CreditCard, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { Check, User, Building, MapPin, Target, Bell, CreditCard, ChevronLeft, ChevronRight, Loader2, FileText, Upload, Clock } from 'lucide-react'
 import supabase from '../../../supabase-client'
 import { toast } from 'sonner'
 
@@ -17,9 +17,10 @@ const STEPS = [
     { id: 2, label: 'Business Details', icon: Building },
     { id: 3, label: 'Location', icon: MapPin },
     { id: 4, label: 'Tender Interests', icon: Target },
-    { id: 5, label: 'Notifications', icon: Bell },
-    { id: 6, label: 'Subscription', icon: CreditCard },
-    { id: 7, label: 'Welcome', icon: Check },
+    { id: 5, label: 'Documents', icon: FileText },
+    { id: 6, label: 'Notifications', icon: Bell },
+    { id: 7, label: 'Subscription', icon: CreditCard },
+    { id: 8, label: 'Welcome', icon: Check },
 ]
 
 const PROVINCES = [
@@ -240,7 +241,85 @@ const Step4Interests = ({ formData, handleInputChange, handleCheckboxChange }) =
     </div>
 )
 
-const Step5Notifications = ({ formData, handleNotificationChange, role }) => (
+// Document Upload Step
+const Step5Documents = ({ formData, handleDocumentUpload, uploading, role }) => (
+    <div className="space-y-6 animate-in slide-in-from-right duration-500">
+        <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Business Verification</h2>
+            <p className="text-gray-500">Upload your business registration document for verification</p>
+        </div>
+
+        <div className="max-w-md mx-auto space-y-6">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                        <p className="font-medium text-blue-800">Required Documents</p>
+                        <ul className="text-sm text-blue-700 mt-1 space-y-1">
+                            <li>• CIPC Certificate / Company Registration</li>
+                            <li>• Tax Clearance Certificate</li>
+                            <li>• Letter of Good Standing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {formData.businessDocumentUrl ? (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                        <Check className="w-5 h-5 text-green-600" />
+                        <div>
+                            <p className="font-medium text-green-800">Document Uploaded</p>
+                            <p className="text-sm text-green-700">Your document has been uploaded successfully.</p>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-lime-300 transition-colors">
+                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="font-medium text-gray-700 mb-1">Upload your business document</p>
+                    <p className="text-sm text-muted-foreground mb-4">PDF, JPG, or PNG up to 5MB</p>
+                    <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleDocumentUpload}
+                        className="hidden"
+                        id="business-doc-upload"
+                    />
+                    <Button
+                        onClick={() => document.getElementById('business-doc-upload').click()}
+                        disabled={uploading}
+                        className="bg-lime-500 hover:bg-lime-600"
+                    >
+                        {uploading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Uploading...
+                            </>
+                        ) : (
+                            <>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Choose File
+                            </>
+                        )}
+                    </Button>
+                </div>
+            )}
+
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-yellow-600 mt-0.5" />
+                    <div>
+                        <p className="font-medium text-yellow-800">Optional but Recommended</p>
+                        <p className="text-sm text-yellow-700">You can skip this step, but your account will remain pending until documents are verified. You won't be able to {role === 'client' ? 'create tenders' : 'bid on tenders'} until approved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+)
+
+const Step7Notifications = ({ formData, handleNotificationChange, role }) => (
     <div className="space-y-6 animate-in slide-in-from-right duration-500">
         <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Stay informed</h2>
@@ -293,7 +372,7 @@ const Step5Notifications = ({ formData, handleNotificationChange, role }) => (
     </div>
 )
 
-const Step6Subscription = ({ role }) => (
+const Step8Subscription = ({ role }) => (
     <div className="space-y-6 animate-in slide-in-from-right duration-500">
         <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Choose your plan</h2>
@@ -330,16 +409,29 @@ const Step6Subscription = ({ role }) => (
     </div>
 )
 
-const Step7Welcome = ({ finishOnboarding, loading, role }) => (
+const Step9Welcome = ({ finishOnboarding, loading, role }) => (
     <div className="space-y-6 text-center animate-in zoom-in duration-500 py-10">
-        <div className="relative mx-auto w-24 h-24 flex items-center justify-center bg-green-100 rounded-full mb-6">
-            <Check className="w-12 h-12 text-green-600" />
-            <div className="absolute inset-0 rounded-full border-4 border-green-500 opacity-20 animate-ping" />
+        <div className="relative mx-auto w-24 h-24 flex items-center justify-center bg-yellow-100 rounded-full mb-6">
+            <Clock className="w-12 h-12 text-yellow-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900">You're all set!</h2>
+        <h2 className="text-3xl font-bold text-gray-900">Almost There!</h2>
         <p className="text-gray-500 max-w-md mx-auto">
-            Your profile is ready. You will now be redirected to your dashboard where you can start {role === 'client' ? 'posting tenders' : 'finding opportunities'}.
+            Your profile has been submitted and is now <span className="font-semibold text-yellow-600">under review</span>.
         </p>
+
+        <div className="max-w-md mx-auto p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-left">
+            <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-yellow-600 mt-0.5" />
+                <div>
+                    <p className="font-medium text-yellow-800">What happens next?</p>
+                    <ul className="text-sm text-yellow-700 mt-2 space-y-1">
+                        <li>• Our team will verify your business documents</li>
+                        <li>• You'll receive a notification once approved</li>
+                        <li>• Until then, you can explore but {role === 'client' ? 'cannot create tenders' : 'cannot place bids'}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
         <Button
             onClick={finishOnboarding}
@@ -349,15 +441,18 @@ const Step7Welcome = ({ finishOnboarding, loading, role }) => (
         >
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Go to Dashboard'}
         </Button>
+
+        <p className="text-xs text-muted-foreground">Thank you for your patience!</p>
     </div>
 )
 
 
 export default function Onboarding() {
-    const { user, role, navigateByRole } = useAuth()
+    const { user, role, navigateByRole, uploadBusinessDocument } = useAuth()
     const navigate = useNavigate()
     const [currentStep, setCurrentStep] = useState(1)
     const [loading, setLoading] = useState(false)
+    const [uploading, setUploading] = useState(false)
 
     // Form State
     const [formData, setFormData] = useState({
@@ -373,6 +468,7 @@ export default function Onboarding() {
         operatingRegions: [],
         tenderCategories: [],
         budgetRange: '',
+        businessDocumentUrl: null,
         notifications: {
             email: true,
             sms: false,
@@ -404,6 +500,53 @@ export default function Onboarding() {
             ...prev,
             notifications: { ...prev.notifications, [key]: checked }
         }))
+    }
+
+    // Handle document upload during onboarding
+    const handleDocumentUpload = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+        if (!allowedTypes.includes(file.type)) {
+            toast.error('Please upload a PDF or image file (JPG, PNG)')
+            return
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size must be less than 5MB')
+            return
+        }
+
+        setUploading(true)
+
+        try {
+            // Upload to Supabase Storage
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${user.id}/business_doc_${Date.now()}.${fileExt}`
+
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('business-documents')
+                .upload(fileName, file, { upsert: true })
+
+            if (uploadError) throw uploadError
+
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('business-documents')
+                .getPublicUrl(fileName)
+
+            const publicUrl = urlData.publicUrl
+            setFormData(prev => ({ ...prev, businessDocumentUrl: publicUrl }))
+            toast.success('Document uploaded successfully!')
+        } catch (error) {
+            console.error('Error uploading document:', error)
+            toast.error('Failed to upload document. Please try again.')
+        } finally {
+            setUploading(false)
+        }
     }
 
     const validateStep = (step) => {
@@ -468,7 +611,9 @@ export default function Onboarding() {
                 tender_categories: formData.tenderCategories,
                 budget_range: formData.budgetRange,
                 notifications: formData.notifications,
-                onboarding_completed: true,
+                business_document_url: formData.businessDocumentUrl,
+                onboarding_completed: false, // Stays false until admin approves
+                account_status: 'pending', // Account pending admin review
                 role: role,
                 updated_at: new Date(),
             }
@@ -560,9 +705,10 @@ export default function Onboarding() {
             case 2: return <Step2Business formData={formData} handleInputChange={handleInputChange} role={role} />
             case 3: return <Step3Location formData={formData} handleInputChange={handleInputChange} handleCheckboxChange={handleCheckboxChange} />
             case 4: return <Step4Interests formData={formData} handleInputChange={handleInputChange} handleCheckboxChange={handleCheckboxChange} />
-            case 5: return <Step5Notifications formData={formData} handleNotificationChange={handleNotificationChange} role={role} />
-            case 6: return <Step6Subscription role={role} />
-            case 7: return <Step7Welcome finishOnboarding={finishOnboarding} loading={loading} role={role} />
+            case 5: return <Step5Documents formData={formData} handleDocumentUpload={handleDocumentUpload} uploading={uploading} role={role} />
+            case 6: return <Step7Notifications formData={formData} handleNotificationChange={handleNotificationChange} role={role} />
+            case 7: return <Step8Subscription role={role} />
+            case 8: return <Step9Welcome finishOnboarding={finishOnboarding} loading={loading} role={role} />
             default: return null
         }
     }
@@ -583,7 +729,7 @@ export default function Onboarding() {
                     {renderStepContent()}
 
                     {/* Navigation Buttons for all steps except the last Welcome step */}
-                    {currentStep !== 7 && (
+                    {currentStep !== 8 && (
                         <div className="flex justify-between mt-10 pt-6 border-t">
                             <Button
                                 variant="outline"

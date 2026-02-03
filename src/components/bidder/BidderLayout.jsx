@@ -17,13 +17,14 @@ const BIDDER_ROUTES = [
   '/bidder-projects',
   '/teams',
   '/bdocuments',
-  '/bnotifications'
+  '/bnotifications',
+  '/profile'
 ]
 
 // Note: /bnotifications is bidder-specific, /notifications is shared (handled separately)
 
 // Shared routes that both user types can access (need role-based check)
-const SHARED_ROUTES = ['/notifications', '/teams']
+const SHARED_ROUTES = ['/notifications', '/teams', '/profile']
 
 // Helper to check if a path is a bidder route
 const isBidderRoute = (pathname, userRole) => {

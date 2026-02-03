@@ -89,11 +89,15 @@ const UserManagement = () => {
         user.role?.toLowerCase().includes(searchQuery.toLowerCase()))
     )
 
-    const getStatusBadge = (completed) => {
-        if (completed) {
-            return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case 'approved':
+                return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+            case 'rejected':
+                return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejected</span>
+            default:
+                return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
         }
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
     }
 
     return (
@@ -163,8 +167,8 @@ const UserManagement = () => {
                                                     >
                                                         <SelectTrigger className="w-[120px] h-8 text-xs border-none bg-transparent hover:bg-gray-100">
                                                             <div className={`px-2 py-0.5 rounded-md text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                                                                    user.role === 'pro' ? 'bg-blue-100 text-blue-700' :
-                                                                        'bg-green-100 text-green-700'
+                                                                user.role === 'pro' ? 'bg-blue-100 text-blue-700' :
+                                                                    'bg-green-100 text-green-700'
                                                                 }`}>
                                                                 {user.role || 'No Role'}
                                                             </div>
@@ -180,7 +184,7 @@ const UserManagement = () => {
                                                     {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                                                 </td>
                                                 <td className="py-4 px-4">
-                                                    {getStatusBadge(user.onboarding_completed)}
+                                                    {getStatusBadge(user.account_status)}
                                                 </td>
                                                 <td className="py-4 px-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">

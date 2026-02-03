@@ -12,13 +12,14 @@ const CONTRACTOR_ROUTES = [
   '/tender',
   '/teams',
   '/cdocuments',
-  '/notifications'
+  '/notifications',
+  '/profile'
 ]
 
 // Note: /notifications is shared but ContractorLayout handles it for 'client' role
 
 // Shared routes that both user types can access (need role-based check)
-const SHARED_ROUTES = ['/notifications', '/teams']
+const SHARED_ROUTES = ['/notifications', '/teams', '/profile']
 
 // Helper to check if a path is a contractor route
 const isContractorRoute = (pathname, userRole) => {

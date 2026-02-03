@@ -23,45 +23,50 @@ import ADashboard from "@/components/admin/ADashboard"
 import AdminLayout from "@/layouts/AdminLayout"
 import UserManagement from "@/components/admin/UserManagement"
 import UserProfile from "@/components/admin/UserProfile"
+import MyProfile from "@/components/profile/MyProfile"
+import { NotificationProvider } from "@/context/NotificationContext"
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/onboarding" element={<Onboarding />} />
+      <NotificationProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/onboarding" element={<Onboarding />} />
 
-          {/* Authenticated Routes wrapped in MainLayout */}
-          <Route element={<MainLayout />}>
-            {/* Shared */}
-            <Route path="teams" element={<TeamsPage />} />
-            <Route path="notifications" element={<Notifactions />} />
+            {/* Authenticated Routes wrapped in MainLayout */}
+            <Route element={<MainLayout />}>
+              {/* Shared */}
+              <Route path="teams" element={<TeamsPage />} />
+              <Route path="notifications" element={<Notifactions />} />
+              <Route path="profile" element={<MyProfile />} />
 
-            {/* Contractor Routes */}
-            <Route path="cdashboard" element={<CDashboard />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="tender" element={<Tender />} />
-            <Route path="tender/:id/bids" element={<TenderBids />} />
-            <Route path="cdocuments" element={<CDocuments />} />
+              {/* Contractor Routes */}
+              <Route path="cdashboard" element={<CDashboard />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="tender" element={<Tender />} />
+              <Route path="tender/:id/bids" element={<TenderBids />} />
+              <Route path="cdocuments" element={<CDocuments />} />
 
-            {/* Bidder Routes */}
-            <Route path="tenders" element={<Tenders />} />
-            <Route path="tenders/:id" element={<TenderDetails />} />
-            <Route path="bidder-projects" element={<Projects />} />
-            <Route path="bdashboard" element={<BDashboard />} />
-            <Route path="bdocuments" element={<BDocuments />} />
-            <Route path="bnotifications" element={<Notifactions />} />
-          </Route>
+              {/* Bidder Routes */}
+              <Route path="tenders" element={<Tenders />} />
+              <Route path="tenders/:id" element={<TenderDetails />} />
+              <Route path="bidder-projects" element={<Projects />} />
+              <Route path="bdashboard" element={<BDashboard />} />
+              <Route path="bdocuments" element={<BDocuments />} />
+              <Route path="bnotifications" element={<Notifactions />} />
+            </Route>
 
-          <Route element={<AdminLayout />}>
-            <Route path="adashboard" element={<ADashboard />} />
-            <Route path="admin/users" element={<UserManagement />} />
-            <Route path="admin/users/:id" element={<UserProfile />} />
-          </Route>
-        </Routes>
-        <Toaster position="top-right" richColors />
-      </BrowserRouter>
+            <Route element={<AdminLayout />}>
+              <Route path="adashboard" element={<ADashboard />} />
+              <Route path="admin/users" element={<UserManagement />} />
+              <Route path="admin/users/:id" element={<UserProfile />} />
+            </Route>
+          </Routes>
+          <Toaster position="top-right" richColors />
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   )
 }

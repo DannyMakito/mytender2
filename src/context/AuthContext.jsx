@@ -339,11 +339,16 @@ export function AuthProvider({ children }) {
 
       // Map the renamed columns from RPC to frontend expected format
       const users = data.map(row => ({
-        id: row.user_id,
-        email: row.user_email,
+        id: row.profile_id,
+        email: row.profile_email,
         role: row.user_role,
-        created_at: row.user_created_at,
-        onboarding_completed: row.user_onboarding_completed
+        created_at: row.profile_created_at,
+        onboarding_completed: row.profile_onboarding_completed,
+        first_name: row.profile_first_name,
+        last_name: row.profile_last_name,
+        account_status: row.profile_account_status,
+        business_document_url: row.profile_business_document_url,
+        rejection_reason: row.profile_rejection_reason
       }))
 
       return { success: true, users }
@@ -358,6 +363,7 @@ export function AuthProvider({ children }) {
     try {
       if (role !== 'admin') throw new Error('Unauthorized')
 
+      // 1. Fetch the profile directly
       const { data: profile, error: pError } = await supabase
         .from('profiles')
         .select('*')
@@ -366,22 +372,18 @@ export function AuthProvider({ children }) {
 
       if (pError) throw pError
 
-      // Fetch email from user_roles
-      const { data: roleData, error: rError } = await supabase
+      // 2. Fetch email from user_roles (optional, don't crash if missing)
+      const { data: roleData } = await supabase
         .from('user_roles')
         .select('user_email')
         .eq('user_id', userId)
-        .single()
-
-      if (rError && rError.code !== 'PGRST116') { // Ignore "not found" error for email
-        console.warn('Could not find email in user_roles for ID:', userId)
-      }
+        .maybeSingle()
 
       return {
         success: true,
         profile: {
           ...profile,
-          email: roleData ? roleData.user_email : 'N/A'
+          email: roleData?.user_email || 'N/A'
         }
       }
     } catch (error) {
@@ -410,6 +412,128 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Admin: Approve a user's account
+  const approveAccount = async (userId) => {
+    try {
+      if (role !== 'admin') throw new Error('Unauthorized')
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          account_status: 'approved',
+          onboarding_completed: true,
+          rejection_reason: null
+        })
+        .eq('id', userId)
+
+      if (error) throw error
+      return { success: true }
+    } catch (error) {
+      console.error('Error approving account:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Admin: Reject a user's account
+  const rejectAccount = async (userId, reason) => {
+    try {
+      if (role !== 'admin') throw new Error('Unauthorized')
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          account_status: 'rejected',
+          onboarding_completed: false,
+          rejection_reason: reason || 'Your account verification was not approved.'
+        })
+        .eq('id', userId)
+
+      if (error) throw error
+      return { success: true }
+    } catch (error) {
+      console.error('Error rejecting account:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // User: Get my own profile
+  const getMyProfile = async () => {
+    try {
+      if (!user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error) throw error
+      return { success: true, profile: data }
+    } catch (error) {
+      console.error('Error fetching my profile:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // User: Upload business document
+  const uploadBusinessDocument = async (file) => {
+    try {
+      if (!user) throw new Error('Not authenticated')
+
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}/business_doc_${Date.now()}.${fileExt}`
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('business-documents')
+        .upload(fileName, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('business-documents')
+        .getPublicUrl(fileName)
+
+      const publicUrl = urlData.publicUrl
+
+      // Update profile with document URL and reset status to pending for re-review
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          business_document_url: publicUrl,
+          account_status: 'pending',
+          rejection_reason: null
+        })
+        .eq('id', user.id)
+
+      if (updateError) throw updateError
+
+      return { success: true, url: publicUrl }
+    } catch (error) {
+      console.error('Error uploading document:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // User: Update my profile
+  const updateMyProfile = async (updates) => {
+    try {
+      if (!user) throw new Error('Not authenticated')
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ ...updates, updated_at: new Date() })
+        .eq('id', user.id)
+
+      if (error) throw error
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
   const value = {
     user,
     role,
@@ -425,6 +549,11 @@ export function AuthProvider({ children }) {
     getAllUsers,
     getUserProfile,
     deleteUserProfile,
+    approveAccount,
+    rejectAccount,
+    getMyProfile,
+    uploadBusinessDocument,
+    updateMyProfile,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

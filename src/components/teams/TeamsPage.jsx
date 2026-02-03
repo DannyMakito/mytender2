@@ -349,7 +349,12 @@ export default function TeamsPage() {
                                 </div>
                                 <div>
                                     <h2 className="font-semibold text-sm">{selectedProject.name}</h2>
-                                    <p className="text-xs text-muted-foreground">Team Chat</p>
+                                    <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                        {[selectedProject.owner_email, selectedProject.winner_email]
+                                            .filter(Boolean)
+                                            .map(email => email.split('@')[0])
+                                            .join(', ')}
+                                    </p>
                                 </div>
                             </div>
                         ) : (
