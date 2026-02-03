@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   budget_range text,
   notifications jsonb DEFAULT '{"email": true, "sms": false, "digest": false}'::jsonb,
   onboarding_completed boolean DEFAULT false,
+  account_status text DEFAULT 'pending' CHECK (account_status IN ('pending', 'approved', 'rejected')),
+  business_document_url text, -- URL to uploaded business verification document
+  rejection_reason text, -- Reason if account was rejected
   role text, -- 'client' or 'pro'
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now()
