@@ -17,6 +17,8 @@ const BIDDER_ROUTES = [
   '/bidder-projects',
   '/teams',
   '/bdocuments',
+  '/bdocuments/templates',
+  '/bdocuments/new',
   '/bnotifications',
   '/profile'
 ]
@@ -36,8 +38,8 @@ const isBidderRoute = (pathname, userRole) => {
     }
     return true
   }
-  // Check if path starts with /tenders/ (for dynamic routes like /tenders/:id)
-  if (pathname.startsWith('/tenders/')) {
+  // Check if path starts with /tenders/ or /bdocuments/ (for dynamic routes)
+  if (pathname.startsWith('/tenders/') || pathname.startsWith('/bdocuments/')) {
     return true
   }
   return false

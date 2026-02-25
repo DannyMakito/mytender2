@@ -18,7 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { IconMapPin, IconTag, IconClock, IconSearch, IconUpload } from "@tabler/icons-react"
+import {
+  IconMapPin, IconTag, IconClock, IconFileText,
+  IconSearch,
+  IconUpload,
+  IconCheck,
+  IconX
+} from "@tabler/icons-react"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet"
 import supabase from "../../../supabase-client.js"
 import { useAuth } from "@/context/AuthContext"
@@ -65,9 +71,26 @@ export default function Tender() {
     category: "",
     closingDate: "",
     document_url: "",
+    required_roles: [],
   })
 
+  const [roleInput, setRoleInput] = useState("")
+  const [allowCompany, setAllowCompany] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
+
+  const handleAddRole = (e) => {
+    if (e.key === 'Enter' || e.type === 'click') {
+      e.preventDefault()
+      if (roleInput.trim() && !form.required_roles.includes(roleInput.trim())) {
+        setForm(f => ({ ...f, required_roles: [...f.required_roles, roleInput.trim()] }))
+        setRoleInput("")
+      }
+    }
+  }
+
+  const handleRemoveRole = (roleToRemove) => {
+    setForm(f => ({ ...f, required_roles: f.required_roles.filter(r => r !== roleToRemove) }))
+  }
 
   // Fetch tenders from Supabase
   useEffect(() => {
@@ -156,10 +179,14 @@ export default function Tender() {
     try {
       setLoading(true)
 
-      // Upload document if selected
       let documentUrl = form.document_url
       if (selectedFile) {
         documentUrl = await uploadDocument(selectedFile)
+      }
+
+      const rolesToSave = [...form.required_roles]
+      if (allowCompany && !rolesToSave.includes('Company (All Roles)')) {
+        rolesToSave.push('Company (All Roles)')
       }
 
       const newTender = {
@@ -172,6 +199,7 @@ export default function Tender() {
         document_url: documentUrl || null,
         posted_by: user.email,
         status: 'open',
+        required_roles: rolesToSave,
       }
 
       let { data, error } = await supabase
@@ -225,8 +253,11 @@ export default function Tender() {
         category: "",
         closingDate: "",
         document_url: "",
+        required_roles: [],
       })
       setSelectedFile(null)
+      setAllowCompany(false)
+      setRoleInput("")
 
       // Reset file input
       const fileInput = document.querySelector('input[type="file"]')
@@ -292,11 +323,11 @@ export default function Tender() {
           </Button>
         )}
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetContent side="right" className="w-full sm:w-3/4 sm:max-w-sm flex flex-col">
+          <SheetContent side="right" className="w-full sm:w-3/4 sm:max-w-sm overflow-y-auto">
 
 
-            <form onSubmit={handleCreate} className="flex-1 flex flex-col">
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <form onSubmit={handleCreate} className="mt-6">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Title *</label>
                   <Input
@@ -360,6 +391,46 @@ export default function Tender() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Roles Section */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Required Roles</label>
+                  <p className="text-xs text-muted-foreground mb-2">Split the tender into specific roles (e.g. Plumbing, Electrical).</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Input
+                      placeholder="Type a role and press Enter"
+                      value={roleInput}
+                      onChange={(e) => setRoleInput(e.target.value)}
+                      onKeyDown={handleAddRole}
+                    />
+                    <Button type="button" onClick={handleAddRole} variant="secondary">Add</Button>
+                  </div>
+                  {form.required_roles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {form.required_roles.map(role => (
+                        <span key={role} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">
+                          {role}
+                          <button type="button" onClick={() => handleRemoveRole(role)} className="hover:text-destructive transition-colors">
+                            <IconX className="size-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 mt-3 p-3 bg-muted/50 rounded-md border text-sm">
+                    <input
+                      type="checkbox"
+                      id="allowCompany"
+                      checked={allowCompany}
+                      onChange={(e) => setAllowCompany(e.target.checked)}
+                      className="rounded border-gray-300 w-4 h-4 cursor-pointer"
+                    />
+                    <label htmlFor="allowCompany" className="cursor-pointer font-medium">
+                      Also allow a Company to bid for the entire project (All Roles)
+                    </label>
+                  </div>
                 </div>
 
                 <div>
@@ -448,43 +519,67 @@ export default function Tender() {
                   <CardTitle className="font-semibold mb-2">{t.title}</CardTitle>
                   <CardDescription className="text-sm text-muted-foreground mb-4">
                     {t.description && (
-                      <p className="mb-2 line-clamp-2">{t.description}</p>
-                    )}
-                    <div className="flex flex-col gap-1 mb-2">
-                      {t.province && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <IconMapPin className="size-4 text-muted-foreground" />
-                          {t.province}
-                        </div>
-                      )}
-                      {t.budget && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <IconTag className="size-4 text-muted-foreground" />
-                          R{t.budget}
-                        </div>
-                      )}
-                      {t.category && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <IconTag className="size-4 text-muted-foreground" />
-                          {t.category}
-                        </div>
-                      )}
-                      {t.closing_date && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <IconClock className="size-4 text-muted-foreground" />
-                          {days !== null ? (days > 0 ? `Closes in ${days} days` : days === 0 ? "Closes today" : "Closed") : t.closing_date}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-orange-600 font-medium mt-2">
-                      {days !== null && days > 0 && `CLOSES in ${days} days`}
-                      {days === 0 && "CLOSES today"}
-                      {days !== null && days < 0 && "CLOSED"}
-                    </div>
-                    {publishedDate && (
-                      <div className="text-xs text-muted-foreground mt-2">Published {publishedDate}</div>
+                      <p className="line-clamp-2 mt-1">{t.description}</p>
                     )}
                   </CardDescription>
+
+                  {t.required_roles && t.required_roles.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Roles Required:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {t.required_roles.filter(role => role !== 'Company (All Roles)').slice(0, 3).map(role => (
+                          <span key={role} className="inline-flex items-center bg-secondary/50 text-secondary-foreground text-[10px] px-1.5 py-0.5 rounded border">
+                            {role}
+                          </span>
+                        ))}
+                        {t.required_roles.filter(role => role !== 'Company (All Roles)').length > 3 && (
+                          <span className="inline-flex items-center bg-secondary/50 text-secondary-foreground text-[10px] px-1.5 py-0.5 rounded border">
+                            +{t.required_roles.filter(role => role !== 'Company (All Roles)').length - 3} more
+                          </span>
+                        )}
+                        {t.required_roles.includes('Company (All Roles)') && (
+                          <span className="inline-flex items-center bg-blue-50 text-blue-700 border-blue-200 text-[10px] px-1.5 py-0.5 rounded border">
+                            Companies Allowed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2 text-sm">
+                    {t.province && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <IconMapPin className="size-4 text-muted-foreground" />
+                        {t.province}
+                      </div>
+                    )}
+                    {t.budget && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <IconTag className="size-4 text-muted-foreground" />
+                        R{t.budget}
+                      </div>
+                    )}
+                    {t.category && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <IconTag className="size-4 text-muted-foreground" />
+                        {t.category}
+                      </div>
+                    )}
+                    {t.closing_date && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <IconClock className="size-4 text-muted-foreground" />
+                        {days !== null ? (days > 0 ? `Closes in ${days} days` : days === 0 ? "Closes today" : "Closed") : t.closing_date}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-orange-600 font-medium mt-2">
+                    {days !== null && days > 0 && `CLOSES in ${days} days`}
+                    {days === 0 && "CLOSES today"}
+                    {days !== null && days < 0 && "CLOSED"}
+                  </div>
+                  {publishedDate && (
+                    <div className="text-xs text-muted-foreground mt-2">Published {publishedDate}</div>
+                  )}
                 </CardContent>
                 <CardFooter className="mt-4">
                   <div className="w-full flex flex-col gap-2">
@@ -511,7 +606,8 @@ export default function Tender() {
             )
           })}
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   )
 }

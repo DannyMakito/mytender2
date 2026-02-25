@@ -152,7 +152,7 @@ const GetStartedModal = ({ isOpen = false, onClose = () => { } }) => {
               disabled={loading}
               className={`flex-1 py-2 rounded-md text-sm ${role === 'client' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' : 'border'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Client
+              SMME
             </button>
             <button
               onClick={() => setRole('pro')}

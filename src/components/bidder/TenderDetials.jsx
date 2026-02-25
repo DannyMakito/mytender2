@@ -11,6 +11,13 @@ import {
   CardFooter,
 } from "@/components/ui/card"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -44,6 +51,7 @@ export default function TenderDetails() {
   const [submitting, setSubmitting] = useState(false)
   const [bidError, setBidError] = useState("")
   const [userBid, setUserBid] = useState(null)
+  const [selectedRole, setSelectedRole] = useState("")
 
   useEffect(() => {
     if (id && user?.email) {
@@ -101,6 +109,7 @@ export default function TenderDetails() {
     setBidError("")
     setBidAmount("")
     setSelectedFile(null)
+    setSelectedRole("")
   }
 
   function handleCloseBidModal() {
@@ -153,6 +162,11 @@ export default function TenderDetails() {
       return
     }
 
+    if (tender?.required_roles?.length > 0 && !selectedRole) {
+      setBidError("Please select which role you are bidding for")
+      return
+    }
+
     if (!selectedFile) {
       setBidError("Please upload your bid proposal document")
       return
@@ -177,7 +191,8 @@ export default function TenderDetails() {
           bidder: user.email,
           bid_amount: amount,
           proposal_url: proposalUrl,
-          status: 'submitted'
+          status: 'submitted',
+          role: tender?.required_roles?.length > 0 ? selectedRole : null
         })
         .select()
         .single()
@@ -189,10 +204,10 @@ export default function TenderDetails() {
         description: `Your bid of R${amount} has been submitted for ${tender.title}.`,
         duration: 5000,
       })
-      
+
       // Close modal and refresh tender details
       handleCloseBidModal()
-      
+
       // Refresh the page to show the updated bid list
       window.location.reload()
     } catch (err) {
@@ -229,14 +244,14 @@ export default function TenderDetails() {
   }
 
   const days = tender.closing_date ? daysUntil(tender.closing_date) : null
-  const statusColor = tender.status === 'open' ? 'bg-green-50 text-green-700 border-green-100' : 
-                      tender.status === 'closed' ? 'bg-red-50 text-red-700 border-red-100' : 
-                      'bg-gray-50 text-gray-700 border-gray-100'
+  const statusColor = tender.status === 'open' ? 'bg-green-50 text-green-700 border-green-100' :
+    tender.status === 'closed' ? 'bg-red-50 text-red-700 border-red-100' :
+      'bg-gray-50 text-gray-700 border-gray-100'
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         onClick={() => navigate("/tenders")}
         className="mb-4"
       >
@@ -254,9 +269,8 @@ export default function TenderDetails() {
                   {tender.status || 'open'}
                 </span>
                 {days !== null && (
-                  <span className={`text-sm font-medium ${
-                    days > 0 ? 'text-orange-600' : days === 0 ? 'text-red-600' : 'text-gray-600'
-                  }`}>
+                  <span className={`text-sm font-medium ${days > 0 ? 'text-orange-600' : days === 0 ? 'text-red-600' : 'text-gray-600'
+                    }`}>
                     {days > 0 ? `Closes in ${days} days` : days === 0 ? "Closes today" : "Closed"}
                   </span>
                 )}
@@ -335,8 +349,8 @@ export default function TenderDetails() {
 
         <CardFooter className="flex gap-4 pt-6 border-t">
           {tender.document_url && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleViewDocument}
               className="flex-1"
             >
@@ -344,11 +358,11 @@ export default function TenderDetails() {
               View Documentation
             </Button>
           )}
-          <Button 
+          <Button
             onClick={handleBid}
             className="flex-1"
             disabled={tender.status === 'closed' || (days !== null && days < 0) || !!userBid}
-            style={userBid ? {backgroundColor:'#4a5565', color:'#ffff', cursor: 'not-allowed', borderColor:'#e5e7eb'} : {}}
+            style={userBid ? { backgroundColor: '#4a5565', color: '#ffff', cursor: 'not-allowed', borderColor: '#e5e7eb' } : {}}
           >
             {userBid ? 'Bid Already Placed' : 'Bid'}
           </Button>
@@ -367,6 +381,27 @@ export default function TenderDetails() {
 
           <form onSubmit={handleSubmitBid}>
             <div className="space-y-4 py-4">
+              {/* Role Selection (If applicable) */}
+              {tender?.required_roles?.length > 0 && (
+                <div className="space-y-2">
+                  <label htmlFor="roleSelect" className="text-sm font-medium">
+                    Applying for Role <span className="text-red-500">*</span>
+                  </label>
+                  <Select value={selectedRole} onValueChange={setSelectedRole} disabled={submitting || uploading}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tender.required_roles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {/* Bid Amount Input */}
               <div className="space-y-2">
                 <label htmlFor="bidAmount" className="text-sm font-medium">

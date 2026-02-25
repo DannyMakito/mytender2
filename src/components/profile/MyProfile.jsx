@@ -136,22 +136,22 @@ const MyProfile = () => {
     }
 
     return (
-        <div className="p-6 space-y-6 max-w-4xl mx-auto">
+        <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
                     <p className="text-muted-foreground">View and manage your account details</p>
                 </div>
             </div>
-
+ 
             {/* Account Status Banner */}
             {getStatusBadge(profile.account_status)}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Profile Card */}
-                <Card className="lg:col-span-1 border-none shadow-sm">
-                    <CardHeader className="text-center pb-2">
-                        <div className="mx-auto w-24 h-24 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-3xl font-bold mb-4">
+                <Card className="lg:col-span-1 border-none shadow-sm h-fit">
+                    <CardHeader className="text-left pb-2">
+                        <div className="w-24 h-24 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-3xl font-bold mb-4">
                             {(profile.first_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
                         </div>
                         <CardTitle className="text-xl">
@@ -160,15 +160,15 @@ const MyProfile = () => {
                         <CardDescription>{user?.email}</CardDescription>
                         <div className="pt-4">
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                                    role === 'pro' ? 'bg-blue-100 text-blue-700' :
-                                        'bg-green-100 text-green-700'
+                                role === 'pro' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-green-100 text-green-700'
                                 }`}>
                                 {role?.toUpperCase() || 'USER'}
                             </span>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-4 mt-4">
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="text-left text-sm text-muted-foreground">
                             Member since {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
                         </div>
                     </CardContent>
@@ -178,8 +178,8 @@ const MyProfile = () => {
                 <div className="lg:col-span-2 space-y-6">
                     {/* Document Upload Section */}
                     <Card className={`border-none shadow-sm border-l-4 ${profile.account_status === 'rejected' ? 'border-l-red-500' :
-                            profile.account_status === 'approved' ? 'border-l-green-500' :
-                                'border-l-orange-500'
+                        profile.account_status === 'approved' ? 'border-l-green-500' :
+                            'border-l-orange-500'
                         }`}>
                         <CardHeader>
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">

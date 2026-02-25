@@ -1,15 +1,38 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     IconUsers,
     IconListDetails,
     IconCurrencyDollar,
     IconTrophy,
     IconChartBar,
-    IconClock
+    IconClock,
+    IconLoader2
 } from '@tabler/icons-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useAuth } from '@/context/AuthContext'
 
 const ADashboard = () => {
+    const { getAllUsers } = useAuth()
+    const [recentUsers, setRecentUsers] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetchRecentUsers()
+    }, [])
+
+    const fetchRecentUsers = async () => {
+        setLoading(true)
+        const result = await getAllUsers()
+        if (result.success) {
+            // Sort by created_at descending and take first 5
+            const sorted = [...result.users].sort((a, b) =>
+                new Date(b.created_at) - new Date(a.created_at)
+            ).slice(0, 5)
+            setRecentUsers(sorted)
+        }
+        setLoading(false)
+    }
+
     const stats = [
         {
             title: "Total Users",
@@ -95,22 +118,40 @@ const ADashboard = () => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
-                                        <IconUsers className="size-4 text-gray-500" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium">User {i}</p>
-                                        <p className="text-xs text-muted-foreground">user{i}@example.com</p>
-                                    </div>
-                                    <div className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                                        {i % 2 === 0 ? 'Client' : 'Pro'}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center py-8 space-y-2">
+                                <IconLoader2 className="size-6 text-orange-600 animate-spin" />
+                                <p className="text-sm text-muted-foreground">Loading...</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {recentUsers.length > 0 ? (
+                                    recentUsers.map((u) => (
+                                        <div key={u.id} className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-sm">
+                                                {(u.email?.[0] || 'U').toUpperCase()}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium truncate">
+                                                    {u.first_name ? `${u.first_name} ${u.last_name || ''}` : u.email}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                                            </div>
+                                            <div className={`text-xs font-medium px-2 py-1 rounded ${u.role === 'pro'
+                                                ? 'text-blue-600 bg-blue-50'
+                                                : u.role === 'admin'
+                                                    ? 'text-purple-600 bg-purple-50'
+                                                    : 'text-green-600 bg-green-50'
+                                                }`}>
+                                                {(u.role || 'user').charAt(0).toUpperCase() + (u.role || 'user').slice(1)}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center py-4 text-sm text-muted-foreground">No recent signups</p>
+                                )}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

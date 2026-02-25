@@ -13,7 +13,7 @@ CREATE TYPE notification_type AS ENUM (
 -- Create notifications table
 CREATE TABLE IF NOT EXISTS public.notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_email TEXT NOT NULL, -- Changed from user_id UUID to match frontend and fix schema mismatch
   type notification_type NOT NULL,
   title TEXT NOT NULL,
   message TEXT NOT NULL,
@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 );
 
 -- Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_email ON public.notifications(user_email);
 CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON public.notifications(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON public.notifications(user_id, is_read) WHERE is_read = FALSE;
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON public.notifications(user_email, is_read) WHERE is_read = FALSE;
 CREATE INDEX IF NOT EXISTS idx_notifications_type ON public.notifications(type);
 
 -- Enable RLS
@@ -39,7 +39,7 @@ ON public.notifications
 FOR SELECT
 TO authenticated
 USING (
-  user_id = auth.uid() OR 
+  user_email = auth.jwt() ->> 'email' OR 
   (type = 'NEW_TENDER' AND auth.uid() IS NOT NULL)
 );
 
@@ -48,20 +48,20 @@ CREATE POLICY "Users can update their own notifications"
 ON public.notifications
 FOR UPDATE
 TO authenticated
-USING (user_id = auth.uid())
-WITH CHECK (user_id = auth.uid());
+USING (user_email = auth.jwt() ->> 'email')
+WITH CHECK (user_email = auth.jwt() ->> 'email');
 
 -- RLS Policy: Users can delete their own notifications
 CREATE POLICY "Users can delete their own notifications"
 ON public.notifications
 FOR DELETE
 TO authenticated
-USING (user_id = auth.uid());
+USING (user_email = auth.jwt() ->> 'email');
 
 -- SECURITY DEFINER function to create notifications (for system-generated notifications)
 -- This allows the system to create notifications on behalf of users
 CREATE OR REPLACE FUNCTION public.create_notification(
-  p_user_id UUID,
+  p_user_email TEXT,
   p_type notification_type,
   p_title TEXT,
   p_message TEXT,
@@ -76,7 +76,7 @@ DECLARE
   v_notification_id UUID;
 BEGIN
   INSERT INTO public.notifications (
-    user_id,
+    user_email,
     type,
     title,
     message,
@@ -84,7 +84,7 @@ BEGIN
     project_id
   )
   VALUES (
-    p_user_id,
+    p_user_email,
     p_type,
     p_title,
     p_message,
@@ -114,22 +114,21 @@ AS $$
 DECLARE
   v_count INTEGER;
 BEGIN
-  -- Insert notification for all authenticated users
+  -- Insert notification for all authenticated users (using email from user_roles or auth.users)
   INSERT INTO public.notifications (
-    user_id,
+    user_email,
     type,
     title,
     message,
     tender_id
   )
   SELECT 
-    id,
+    email,
     p_type,
     p_title,
     p_message,
     p_tender_id
-  FROM auth.users
-  WHERE deleted_at IS NULL;
+  FROM auth.users;
   
   GET DIAGNOSTICS v_count = ROW_COUNT;
   RETURN v_count;
@@ -151,7 +150,7 @@ BEGIN
   UPDATE public.notifications
   SET is_read = TRUE
   WHERE id = p_notification_id
-    AND user_id = auth.uid();
+    AND user_email = auth.jwt() ->> 'email';
   
   RETURN FOUND;
 END;
@@ -171,7 +170,7 @@ DECLARE
 BEGIN
   UPDATE public.notifications
   SET is_read = TRUE
-  WHERE user_id = auth.uid()
+  WHERE user_email = auth.jwt() ->> 'email'
     AND is_read = FALSE;
   
   GET DIAGNOSTICS v_count = ROW_COUNT;
@@ -193,7 +192,7 @@ DECLARE
 BEGIN
   SELECT COUNT(*) INTO v_count
   FROM public.notifications
-  WHERE user_id = auth.uid()
+  WHERE user_email = auth.jwt() ->> 'email'
     AND is_read = FALSE;
   
   RETURN COALESCE(v_count, 0);

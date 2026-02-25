@@ -1,0 +1,233 @@
+/* ===== Quill Editor Custom Styles ===== */
+
+/* Import Quill's snow theme base */
+
+/* Editor wrapper — paper-like feel */
+.tender-editor-wrapper {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 600px;
+}
+
+.tender-editor-wrapper .ql-toolbar.ql-snow {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px 10px 0 0;
+  padding: 10px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tender-editor-wrapper .ql-container.ql-snow {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0  10px 10px;
+  min-height: 500px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 12pt;
+  line-height: 1.6;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.03);
+}
+
+.tender-editor-wrapper .ql-editor {
+  padding: 40px 50px;
+  min-height: 500px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.tender-editor-wrapper .ql-editor::before {
+  left: 50px;
+  font-style: italic;
+  color: #94a3b8;
+}
+
+/* Headings */
+.tender-editor-wrapper .ql-editor h1 {
+  font-size: 22pt;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.tender-editor-wrapper .ql-editor h2 {
+  font-size: 17pt;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+  margin-top: 18px;
+}
+
+.tender-editor-wrapper .ql-editor h3 {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+  margin-top: 14px;
+}
+
+.tender-editor-wrapper .ql-editor h4 {
+  font-size: 12pt;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+  margin-top: 10px;
+}
+
+/* Paragraphs */
+.tender-editor-wrapper .ql-editor p {
+  margin-bottom: 8px;
+  color: #334155;
+}
+
+/* Lists */
+.tender-editor-wrapper .ql-editor ul,
+.tender-editor-wrapper .ql-editor ol {
+  padding-left: 28px;
+  margin-bottom: 10px;
+}
+
+.tender-editor-wrapper .ql-editor li {
+  margin-bottom: 4px;
+  color: #334155;
+}
+
+/* Tables */
+.tender-editor-wrapper .ql-editor table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-family: 'Arial', sans-serif;
+  font-size: 10pt;
+}
+
+.tender-editor-wrapper .ql-editor table td,
+.tender-editor-wrapper .ql-editor table th {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.tender-editor-wrapper .ql-editor table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.tender-editor-wrapper .ql-editor table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+/* Links */
+.tender-editor-wrapper .ql-editor a {
+  color: #6366f1;
+  text-decoration: underline;
+}
+
+/* Toolbar button hover */
+.tender-editor-wrapper .ql-toolbar .ql-formats button:hover {
+  color: #6366f1;
+}
+
+.tender-editor-wrapper .ql-toolbar .ql-formats button.ql-active {
+  color: #6366f1;
+}
+
+/* Underline in editor */
+.tender-editor-wrapper .ql-editor u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ===== PDF Export Preview Styles ===== */
+.pdf-export-content {
+  font-family: 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #000000;
+  background: #ffffff;
+}
+
+.pdf-export-content h1 {
+  font-size: 20pt;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.pdf-export-content h2 {
+  font-size: 16pt;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.pdf-export-content h3 {
+  font-size: 13pt;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.pdf-export-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.pdf-export-content table td,
+.pdf-export-content table th {
+  border: 1px solid #333;
+  padding: 6px 10px;
+  font-size: 10pt;
+}
+
+.pdf-export-content table th {
+  background: #e5e5e5;
+  font-weight: 600;
+}
+
+/* ===== Section Navigator ===== */
+.section-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  border: 1px solid transparent;
+}
+
+.section-nav-item:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.section-nav-item.active {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.section-nav-item .section-icon {
+  font-size: 16px;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.section-nav-item .section-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -23,8 +23,8 @@ import supabase from '../../supabase-client.js'
 
 const NOTIFICATION_TYPES = {
   NEW_TENDER: { label: 'New Tender', icon: IconFileDescription, color: 'bg-blue-100 text-blue-800' },
-  AWARDED_TENDER: { label: 'Awarded Tender', icon: IconTrophy, color: 'bg-green-100 text-green-800' },
-  REJECTED_BID: { label: 'Rejected Bid', icon: IconX, color: 'bg-red-100 text-red-800' },
+  AWARDED_TENDER: { label: 'Awards & Approvals', icon: IconTrophy, color: 'bg-green-100 text-green-800' },
+  REJECTED_BID: { label: 'Rejections', icon: IconX, color: 'bg-red-100 text-red-800' },
   PROJECT_TASK: { label: 'Project Task', icon: IconClipboard, color: 'bg-purple-100 text-purple-800' },
   NEW_BID: { label: 'New Bid', icon: IconGift, color: 'bg-orange-100 text-orange-800' },
 }

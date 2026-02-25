@@ -34,9 +34,7 @@ const CATEGORIES = [
 ]
 
 const INDUSTRIES = [
-    'Agriculture', 'Construction', 'Education', 'Energy', 'finance',
-    'Healthcare', 'Hospitality', 'IT & Telecoms', 'Manufacturing',
-    'Mining', 'Retail', 'Transport', 'Other Service Activities'
+    'Housing development', 'office spaces','resturants ', 'student accommodation','retail', 'beauty salon','plumbing','Other Service Activities'
 ]
 
 // --- Step Components Defined Outside ---

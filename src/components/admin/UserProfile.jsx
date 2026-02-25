@@ -62,6 +62,19 @@ const UserProfile = () => {
         setUpdating(true)
         const result = await approveAccount(id)
         if (result.success) {
+            // Create a notification for the user
+            try {
+                await supabase.from('notifications').insert({
+                    user_email: profile.email,
+                    type: 'AWARDED_TENDER', // Using existing enum type for DB compatibility 
+                    title: 'Account Verified!',
+                    message: 'Congratulations! Your business account has been approved. You can now start using all platform features.',
+                    is_read: false
+                })
+            } catch (notifErr) {
+                console.error('Failed to create notification:', notifErr)
+            }
+
             toast.success('Account approved successfully!')
             setProfile({ ...profile, account_status: 'approved', onboarding_completed: true })
         } else {
@@ -78,6 +91,19 @@ const UserProfile = () => {
         setUpdating(true)
         const result = await rejectAccount(id, rejectionReason)
         if (result.success) {
+            // Create a notification for the user
+            try {
+                await supabase.from('notifications').insert({
+                    user_email: profile.email,
+                    type: 'REJECTED_BID', // Using existing enum type for DB compatibility
+                    title: 'Account Verification Update',
+                    message: `Your account verification results: Rejected. Reason: ${rejectionReason}`,
+                    is_read: false
+                })
+            } catch (notifErr) {
+                console.error('Failed to create notification:', notifErr)
+            }
+
             toast.success('Account rejected')
             setProfile({ ...profile, account_status: 'rejected', onboarding_completed: false, rejection_reason: rejectionReason })
             setShowRejectModal(false)

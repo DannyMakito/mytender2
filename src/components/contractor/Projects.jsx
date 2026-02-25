@@ -23,15 +23,15 @@ const Projects = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       // Fetch projects where user is owner or winner
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
-        .select('*')
+        .select('id, name, tender_id, owner_email, winner_emails, icon, created_at')
         .order('created_at', { ascending: false })
-      
+
       if (projectsError) throw projectsError
-      
+
       // Fetch tasks for each project
       if (projectsData && projectsData.length > 0) {
         const { data: tasksData, error: tasksError } = await supabase
@@ -39,17 +39,17 @@ const Projects = () => {
           .select('*')
           .in('project_id', projectsData.map(p => p.id))
           .order('created_at', { ascending: false })
-        
+
         if (tasksError) throw tasksError
-        
+
         // Combine projects with their tasks
         const projectsWithTasks = projectsData.map(project => ({
           ...project,
           tasks: (tasksData || []).filter(task => task.project_id === project.id)
         }))
-        
+
         setProjects(projectsWithTasks)
-        
+
         // Set first project as selected if none selected
         if (!selectedProjectId && projectsWithTasks.length > 0) {
           setSelectedProjectId(projectsWithTasks[0].id)
@@ -79,19 +79,19 @@ const Projects = () => {
         start_date: task.startDate || task.start_date || null,
         end_date: task.endDate || task.end_date || null,
       }
-      
+
       const { data, error } = await supabase
         .from('tasks')
         .insert([taskData])
-        .select()
+        .select('id, title, description, status, priority_color, start_date, end_date, project_id')
         .single()
-      
+
       if (error) throw error
-      
+
       // Update local state
-      setProjects((prev) => prev.map((p) => 
-        p.id === projectId 
-          ? { ...p, tasks: [{ ...taskData, id: data.id }, ...p.tasks] }
+      setProjects((prev) => prev.map((p) =>
+        p.id === projectId
+          ? { ...p, tasks: [data, ...p.tasks] }
           : p
       ))
     } catch (err) {
@@ -111,21 +111,21 @@ const Projects = () => {
         start_date: updatedTask.startDate || updatedTask.start_date || null,
         end_date: updatedTask.endDate || updatedTask.end_date || null,
       }
-      
+
       const { error } = await supabase
         .from('tasks')
         .update(taskData)
         .eq('id', updatedTask.id)
-      
+
       if (error) throw error
-      
+
       // Update local state
       setProjects((prev) => prev.map((p) => {
         if (p.id !== projectId) return p
-        return { 
-          ...p, 
-          tasks: p.tasks.map((t) => 
-            t.id === updatedTask.id 
+        return {
+          ...p,
+          tasks: p.tasks.map((t) =>
+            t.id === updatedTask.id
               ? { ...updatedTask, ...taskData, priorityColor: taskData.priority_color }
               : t
           )
@@ -176,23 +176,23 @@ const Projects = () => {
   return (
     <div>
       <div className='grid grid-cols-[3fr_1fr] px-6 mt-8 poppins gap-4'>
-        <ProjectsArea 
-          project={selectedProject} 
-          addTask={addTask} 
-          updateTask={updateTask} 
-          addProject={addProject} 
-          projects={projects} 
+        <ProjectsArea
+          project={selectedProject}
+          addTask={addTask}
+          updateTask={updateTask}
+          addProject={addProject}
+          projects={projects}
           selectedProjectId={selectedProjectId}
           onRefresh={fetchProjects}
         />
-        <SideCard 
-          projects={projects} 
-          selectedProjectId={selectedProjectId} 
-          setSelectedProjectId={setSelectedProjectId} 
+        <SideCard
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          setSelectedProjectId={setSelectedProjectId}
         />
       </div>
     </div>
-  ) 
+  )
 }
 
 export default Projects

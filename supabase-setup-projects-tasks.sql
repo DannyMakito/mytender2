@@ -17,18 +17,19 @@ CREATE TABLE IF NOT EXISTS public.projects (
   bid_id UUID NOT NULL REFERENCES public.bids(id) ON DELETE CASCADE,
   name TEXT NOT NULL, -- Project name (from tender title)
   owner_email TEXT NOT NULL, -- Tender owner email (from tenders.posted_by)
-  winner_email TEXT NOT NULL, -- Bid winner email (from bids.bidder)
+  winner_emails TEXT[] DEFAULT '{}', -- Array of bid winner emails
+  bid_ids UUID[] DEFAULT '{}', -- Array of associated bid IDs
   icon TEXT DEFAULT 'FiFolder' CHECK (icon IN ('FiFolder', 'FiBriefcase', 'FiCamera', 'FiCheckSquare', 'FiStar', 'FiFlag', 'FiDatabase', 'FiTarget')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-  UNIQUE(tender_id, bid_id) -- Ensure one project per approved bid
+  UNIQUE(tender_id) -- One project per tender, multiple winners allowed
 );
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_projects_tender_id ON public.projects(tender_id);
-CREATE INDEX IF NOT EXISTS idx_projects_bid_id ON public.projects(bid_id);
 CREATE INDEX IF NOT EXISTS idx_projects_owner_email ON public.projects(owner_email);
-CREATE INDEX IF NOT EXISTS idx_projects_winner_email ON public.projects(winner_email);
+CREATE INDEX IF NOT EXISTS idx_projects_winner_emails ON public.projects USING GIN (winner_emails);
+CREATE INDEX IF NOT EXISTS idx_projects_bid_ids ON public.projects USING GIN (bid_ids);
 
 -- Create tasks table
 CREATE TABLE IF NOT EXISTS public.tasks (
@@ -71,7 +72,7 @@ BEGIN
   SELECT EXISTS (
     SELECT 1 FROM public.projects
     WHERE id = p_project_id
-    AND (owner_email = v_user_email OR winner_email = v_user_email)
+    AND (owner_email = v_user_email OR v_user_email = ANY(winner_emails))
   ) INTO v_is_member;
   
   RETURN COALESCE(v_is_member, false);
@@ -96,7 +97,7 @@ BEGIN
   SELECT EXISTS (
     SELECT 1 FROM public.projects
     WHERE id = p_project_id
-    AND winner_email = v_user_email
+    AND v_user_email = ANY(winner_emails)
   ) INTO v_is_winner;
   
   RETURN COALESCE(v_is_winner, false);
@@ -243,39 +244,45 @@ RETURNS TRIGGER AS $$
 DECLARE
   v_tender_title TEXT;
   v_tender_owner TEXT;
+  v_project_id UUID;
 BEGIN
   -- Only proceed if the status is being changed to 'approved'
   IF NEW.status = 'approved' AND (OLD.status IS NULL OR OLD.status != 'approved') THEN
-    -- Get tender title and owner from the tender
-    SELECT t.title, t.posted_by
-    INTO v_tender_title, v_tender_owner
-    FROM public.tenders t
-    WHERE t.id = NEW.tender_id;
     
-    -- Check if project already exists for this bid
-    IF NOT EXISTS (
-      SELECT 1 FROM public.projects
-      WHERE bid_id = NEW.id
-    ) THEN
-      -- Create new project with tender title as project name
+    -- Check if project already exists for this tender
+    SELECT id INTO v_project_id FROM public.projects WHERE tender_id = NEW.tender_id;
+    
+    IF v_project_id IS NULL THEN
+      -- Get tender title and owner from the tender
+      SELECT t.title, t.posted_by
+      INTO v_tender_title, v_tender_owner
+      FROM public.tenders t
+      WHERE t.id = NEW.tender_id;
+
+      -- Create new project aggregating all winners into the array
       INSERT INTO public.projects (
         tender_id,
-        bid_id,
         name,
         owner_email,
-        winner_email,
+        winner_emails,
+        bid_ids,
         icon
       ) VALUES (
         NEW.tender_id,
-        NEW.id,
         COALESCE(v_tender_title, 'Untitled Project'),
         COALESCE(v_tender_owner, ''),
-        NEW.bidder,
+        ARRAY[NEW.bidder],
+        ARRAY[NEW.id],
         'FiFolder'
       );
-      
-      -- Log the action
-      RAISE NOTICE 'Project created automatically for approved bid % (tender: %)', NEW.id, NEW.tender_id;
+    ELSE
+      -- Project exists, append winner email and bid id to the existing arrays uniquely
+      UPDATE public.projects 
+      SET 
+        winner_emails = array_append(array_remove(winner_emails, NEW.bidder), NEW.bidder),
+        bid_ids = array_append(array_remove(bid_ids, NEW.id), NEW.id),
+        updated_at = NOW()
+      WHERE id = v_project_id;
     END IF;
   END IF;
   
@@ -303,7 +310,7 @@ SELECT
   p.name,
   p.tender_id,
   p.owner_email,
-  p.winner_email,
+  p.winner_emails,
   p.icon,
   p.created_at,
   p.updated_at,
@@ -317,7 +324,7 @@ SELECT
   END AS completion_percentage
 FROM public.projects p
 LEFT JOIN public.tasks t ON p.id = t.project_id
-GROUP BY p.id, p.name, p.tender_id, p.owner_email, p.winner_email, p.icon, p.created_at, p.updated_at;
+GROUP BY p.id, p.name, p.tender_id, p.owner_email, p.winner_emails, p.icon, p.created_at, p.updated_at;
 
 -- Grant SELECT on the view
 GRANT SELECT ON public.project_stats TO authenticated;

@@ -54,7 +54,7 @@ BEGIN
     AND EXISTS (
       SELECT 1 FROM public.projects p
       WHERE p.id = m.project_id
-      AND (p.owner_email = p_user_email OR p.winner_email = p_user_email)
+      AND (p.owner_email = p_user_email OR p_user_email = ANY(p.winner_emails))
     )
   GROUP BY m.project_id;
 END;

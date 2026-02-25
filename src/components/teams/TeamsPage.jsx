@@ -74,8 +74,8 @@ export default function TeamsPage() {
             setLoading(true)
             const { data, error } = await supabase
                 .from('projects')
-                .select('*')
-                .or(`owner_email.eq.${user.email},winner_email.eq.${user.email}`)
+                .select('id, name, owner_email, winner_emails, icon, updated_at')
+                .or(`owner_email.eq.${user.email},winner_emails.cs.{${user.email}}`)
                 .order('updated_at', { ascending: false })
 
             if (error) throw error
@@ -350,7 +350,7 @@ export default function TeamsPage() {
                                 <div>
                                     <h2 className="font-semibold text-sm">{selectedProject.name}</h2>
                                     <p className="text-xs text-muted-foreground truncate max-w-[200px]">
-                                        {[selectedProject.owner_email, selectedProject.winner_email]
+                                        {[selectedProject.owner_email, ...(selectedProject.winner_emails || [])]
                                             .filter(Boolean)
                                             .map(email => email.split('@')[0])
                                             .join(', ')}

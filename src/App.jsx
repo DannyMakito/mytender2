@@ -12,6 +12,10 @@ import BidderLayout from "./components/bidder/BidderLayout"
 import BDashboard from "@/components/bidder/BDashboard"
 import CDocuments from "@/components/contractor/CDocuments"
 import BDocuments from "@/components/bidder/BDocuments"
+import BidTemplateSelector from "@/components/bidder/proposals/BidTemplateSelector"
+import BidProposalEditor from "@/components/bidder/proposals/BidProposalEditor"
+import TemplateSelector from "@/components/contractor/documents/TemplateSelector"
+import TenderDocumentEditor from "@/components/contractor/documents/TenderDocumentEditor"
 import MainLayout from "@/layouts/MainLayout"
 import { AuthProvider } from "@/context/AuthContext"
 import TenderBids from "@/components/contractor/TenderBids"
@@ -48,6 +52,9 @@ function App() {
               <Route path="tender" element={<Tender />} />
               <Route path="tender/:id/bids" element={<TenderBids />} />
               <Route path="cdocuments" element={<CDocuments />} />
+              <Route path="cdocuments/templates" element={<TemplateSelector />} />
+              <Route path="cdocuments/new" element={<TenderDocumentEditor />} />
+              <Route path="cdocuments/edit/:id" element={<TenderDocumentEditor />} />
 
               {/* Bidder Routes */}
               <Route path="tenders" element={<Tenders />} />
@@ -55,6 +62,9 @@ function App() {
               <Route path="bidder-projects" element={<Projects />} />
               <Route path="bdashboard" element={<BDashboard />} />
               <Route path="bdocuments" element={<BDocuments />} />
+              <Route path="bdocuments/templates" element={<BidTemplateSelector />} />
+              <Route path="bdocuments/new" element={<BidProposalEditor />} />
+              <Route path="bdocuments/edit/:id" element={<BidProposalEditor />} />
               <Route path="bnotifications" element={<Notifactions />} />
             </Route>
 
