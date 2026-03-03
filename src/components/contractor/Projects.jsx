@@ -27,7 +27,7 @@ const Projects = () => {
       // Fetch projects where user is owner or winner
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
-        .select('id, name, tender_id, owner_email, winner_emails, icon, created_at')
+        .select('id, name, tender_id, owner_email, winner_emails, icon, created_at, total_budget, actual_spend, is_locked')
         .order('created_at', { ascending: false })
 
       if (projectsError) throw projectsError
@@ -78,12 +78,16 @@ const Projects = () => {
         priority_color: task.priorityColor || task.priority_color || '',
         start_date: task.startDate || task.start_date || null,
         end_date: task.endDate || task.end_date || null,
+        is_milestone: task.is_milestone || false,
+        client_sign_off: task.client_sign_off || false,
+        contractor_sign_off: task.contractor_sign_off || false,
+        created_by: user?.email || null,
       }
 
       const { data, error } = await supabase
         .from('tasks')
         .insert([taskData])
-        .select('id, title, description, status, priority_color, start_date, end_date, project_id')
+        .select('*')
         .single()
 
       if (error) throw error
@@ -110,6 +114,9 @@ const Projects = () => {
         priority_color: updatedTask.priorityColor || updatedTask.priority_color || '',
         start_date: updatedTask.startDate || updatedTask.start_date || null,
         end_date: updatedTask.endDate || updatedTask.end_date || null,
+        is_milestone: updatedTask.is_milestone || false,
+        client_sign_off: updatedTask.client_sign_off || false,
+        contractor_sign_off: updatedTask.contractor_sign_off || false,
       }
 
       const { error } = await supabase
@@ -134,6 +141,28 @@ const Projects = () => {
     } catch (err) {
       console.error('Error updating task:', err)
       alert('Failed to update task: ' + (err?.message || 'Unknown error'))
+    }
+  }
+
+  async function deleteTask(projectId, taskId) {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+
+      if (error) throw error
+
+      setProjects((prev) => prev.map((p) => {
+        if (p.id !== projectId) return p
+        return {
+          ...p,
+          tasks: p.tasks.filter((t) => t.id !== taskId)
+        }
+      }))
+    } catch (err) {
+      console.error('Error deleting task:', err)
+      alert('Failed to delete task: ' + (err?.message || 'Unknown error'))
     }
   }
 
@@ -180,6 +209,7 @@ const Projects = () => {
           project={selectedProject}
           addTask={addTask}
           updateTask={updateTask}
+          deleteTask={deleteTask}
           addProject={addProject}
           projects={projects}
           selectedProjectId={selectedProjectId}

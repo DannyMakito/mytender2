@@ -137,7 +137,7 @@ const createColumns = (navigate) => [
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate(`/tender/${row.original.id}`)}
+          onClick={() => navigate(`/tender/${row.original.id}/bids`)}
           className="h-8 w-8 p-0"
         >
           <span className="sr-only">View</span>
@@ -450,7 +450,7 @@ export function TenderDataTable() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/tender/${rowData.id}`)}
+                        onClick={() => navigate(`/tender/${rowData.id}/bids`)}
                       >
                         Details
                         <IconChevronRight className="ml-1 size-3.5" />

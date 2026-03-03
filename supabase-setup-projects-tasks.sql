@@ -14,7 +14,6 @@
 CREATE TABLE IF NOT EXISTS public.projects (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   tender_id UUID NOT NULL REFERENCES public.tenders(id) ON DELETE CASCADE,
-  bid_id UUID NOT NULL REFERENCES public.bids(id) ON DELETE CASCADE,
   name TEXT NOT NULL, -- Project name (from tender title)
   owner_email TEXT NOT NULL, -- Tender owner email (from tenders.posted_by)
   winner_emails TEXT[] DEFAULT '{}', -- Array of bid winner emails

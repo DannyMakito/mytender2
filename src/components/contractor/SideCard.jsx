@@ -23,8 +23,11 @@ export default function SideCard({ projects = [], selectedProjectId, setSelected
   }, [project])
 
   const percent = useMemo(() => {
-    const { total, completed } = stats
-    return total > 0 ? Math.round((completed / total) * 100) : 0
+    const { total, completed, inProgress } = stats
+    if (total === 0) return 0
+    // Completed tasks count as 100%, in-progress tasks count as 30% progress
+    const progressPoints = completed + (inProgress * 0.3)
+    return Math.round((progressPoints / total) * 100)
   }, [stats])
 
   return (
@@ -55,7 +58,7 @@ export default function SideCard({ projects = [], selectedProjectId, setSelected
                 <DropdownMenuPortal>
                   <DropdownMenuContent className="w-64 p-2">
                     <div className="p-2">
-                      <input type="search" placeholder="Search a project..." className="w-full rounded-md border px-3 py-2 text-sm" onChange={() => {}} />
+                      <input type="search" placeholder="Search a project..." className="w-full rounded-md border px-3 py-2 text-sm" onChange={() => { }} />
                     </div>
                     <div className="divide-y">
                       {projects.map((p) => {
@@ -95,7 +98,7 @@ export default function SideCard({ projects = [], selectedProjectId, setSelected
                   <div className="text-xs text-muted-foreground">IN PROGRESS</div>
                   <div className="font-semibold">{stats.inProgress}</div>
                 </div>
-            
+
                 <div className="bg-muted/50 rounded-md p-3 text-sm">
                   <div className="text-xs text-muted-foreground">COMPLETED</div>
                   <div className="font-semibold">{stats.completed}</div>

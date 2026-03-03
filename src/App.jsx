@@ -19,6 +19,11 @@ import TenderDocumentEditor from "@/components/contractor/documents/TenderDocume
 import MainLayout from "@/layouts/MainLayout"
 import { AuthProvider } from "@/context/AuthContext"
 import TenderBids from "@/components/contractor/TenderBids"
+import ContractPage from "@/components/contractor/ContractPage"
+import BidderContracts from "@/components/bidder/BidderContracts"
+import BidderContractSign from "@/components/bidder/BidderContractSign"
+import SupplierContracts from "@/components/supplier/SupplierContracts"
+import SupplierContractSign from "@/components/supplier/SupplierContractSign"
 import { Toaster } from "sonner"
 import Notifactions from "./components/Notifactions"
 import Onboarding from "@/components/onboarding/Onboarding"
@@ -29,6 +34,9 @@ import UserManagement from "@/components/admin/UserManagement"
 import UserProfile from "@/components/admin/UserProfile"
 import MyProfile from "@/components/profile/MyProfile"
 import { NotificationProvider } from "@/context/NotificationContext"
+import SDashboard from "./components/supplier/SDashboard"
+import STenders from "./components/supplier/STenders"
+import STenderDetails from "./components/supplier/STenderDetails"
 
 function App() {
   return (
@@ -51,6 +59,7 @@ function App() {
               <Route path="projects" element={<Projects />} />
               <Route path="tender" element={<Tender />} />
               <Route path="tender/:id/bids" element={<TenderBids />} />
+              <Route path="contract/:tenderId" element={<ContractPage />} />
               <Route path="cdocuments" element={<CDocuments />} />
               <Route path="cdocuments/templates" element={<TemplateSelector />} />
               <Route path="cdocuments/new" element={<TenderDocumentEditor />} />
@@ -66,6 +75,15 @@ function App() {
               <Route path="bdocuments/new" element={<BidProposalEditor />} />
               <Route path="bdocuments/edit/:id" element={<BidProposalEditor />} />
               <Route path="bnotifications" element={<Notifactions />} />
+              <Route path="bcontracts" element={<BidderContracts />} />
+              <Route path="bcontracts/:contractId" element={<BidderContractSign />} />
+
+              {/* Supplier Routes */}
+              <Route path="sdashboard" element={<SDashboard />} />
+              <Route path="stenders" element={<STenders />} />
+              <Route path="stenders/:id" element={<STenderDetails />} />
+              <Route path="scontracts" element={<SupplierContracts />} />
+              <Route path="scontracts/:contractId" element={<SupplierContractSign />} />
             </Route>
 
             <Route element={<AdminLayout />}>

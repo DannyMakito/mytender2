@@ -165,8 +165,8 @@ const createColumns = (onWithdraw) => [
         'rejected': 'bg-red-50 text-red-700 border-red-100',
       }
       return (
-        <Badge 
-          variant="outline" 
+        <Badge
+          variant="outline"
           className={`px-2 py-1 ${statusColors[status] || 'bg-gray-50 text-gray-700 border-gray-100'}`}
         >
           {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -244,7 +244,7 @@ export function BidderDataTable() {
     try {
       setLoading(true)
       setError("")
-      
+
       // Fetch bids for the logged-in bidder
       const { data: bidsData, error: bidsError } = await supabase
         .from('bids')
@@ -399,12 +399,8 @@ export function BidderDataTable() {
         <TabsList
           className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
           <TabsTrigger value="outline">All </TabsTrigger>
-          <TabsTrigger value="past-performance">
-            Performance <Badge variant="secondary">3</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="key-personnel">
-            Favorites <Badge variant="secondary">2</Badge>
-          </TabsTrigger>
+          <TabsTrigger value="past-performance">Performance</TabsTrigger>
+          <TabsTrigger value="key-personnel">Favorites</TabsTrigger>
           <TabsTrigger value="focus-documents">Draft Documents</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
@@ -421,8 +417,8 @@ export function BidderDataTable() {
               {table
                 .getAllColumns()
                 .filter((column) =>
-                typeof column.accessorFn !== "undefined" &&
-                column.getCanHide())
+                  typeof column.accessorFn !== "undefined" &&
+                  column.getCanHide())
                 .map((column) => {
                   return (
                     <DropdownMenuCheckboxItem
@@ -453,7 +449,7 @@ export function BidderDataTable() {
                 <SelectValue placeholder={`${pageSizeLocal}`} />
               </SelectTrigger>
               <SelectContent side="top">
-                {[5,10,20,30].map((s) => <SelectItem key={s} value={`${s}`}>{s} per page</SelectItem>)}
+                {[5, 10, 20, 30].map((s) => <SelectItem key={s} value={`${s}`}>{s} per page</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -471,9 +467,9 @@ export function BidderDataTable() {
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       </TableHead>
                     ))}
                   </TableRow>
@@ -542,8 +538,8 @@ export function BidderDataTable() {
                           {(rowData.tender_description || '').slice(0, 120)}
                         </div>
                       </div>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={`ml-2 ${statusColors[status] || 'bg-gray-50 text-gray-700 border-gray-100'}`}
                       >
                         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -581,10 +577,10 @@ export function BidderDataTable() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setPageIndexLocal(0)} disabled={pageIndexLocal === 0}>First</Button>
-            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.max(0, p-1))} disabled={pageIndexLocal === 0}>Prev</Button>
-            <div className="px-2">{pageIndexLocal+1} / {totalPages}</div>
-            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.min(totalPages-1, p+1))} disabled={pageIndexLocal >= totalPages-1}>Next</Button>
-            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal(totalPages-1)} disabled={pageIndexLocal >= totalPages-1}>Last</Button>
+            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.max(0, p - 1))} disabled={pageIndexLocal === 0}>Prev</Button>
+            <div className="px-2">{pageIndexLocal + 1} / {totalPages}</div>
+            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.min(totalPages - 1, p + 1))} disabled={pageIndexLocal >= totalPages - 1}>Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal(totalPages - 1)} disabled={pageIndexLocal >= totalPages - 1}>Last</Button>
           </div>
         </div>
       </TabsContent>

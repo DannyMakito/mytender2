@@ -19,6 +19,7 @@ import { IconArrowLeft, IconFileText, IconCheck, IconX, IconLock } from "@tabler
 import { toast } from "sonner"
 import supabase from "../../../supabase-client"
 import { useAuth } from "@/context/AuthContext"
+import ContractProgress from "./ContractProgress"
 
 export default function TenderBids() {
   const { id } = useParams()
@@ -29,11 +30,13 @@ export default function TenderBids() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [updating, setUpdating] = useState(null) // Track which bid is being updated
+  const [contract, setContract] = useState(null) // Track if contract exists
 
   useEffect(() => {
     if (id) {
       fetchTenderDetails()
       fetchBids()
+      checkForContract()
     }
   }, [id])
 
@@ -73,6 +76,23 @@ export default function TenderBids() {
     }
   }
 
+  async function checkForContract() {
+    try {
+      const { data } = await supabase
+        .from('contracts')
+        .select('id, status')
+        .eq('tender_id', id)
+        .single()
+
+      if (data) {
+        setContract(data)
+      }
+    } catch (err) {
+      // Contract doesn't exist yet, which is fine
+      setContract(null)
+    }
+  }
+
   async function handleStatusUpdate(bidId, newStatus) {
     if (!user?.email) {
       alert("You must be logged in to update bid status")
@@ -99,56 +119,18 @@ export default function TenderBids() {
 
       if (error) throw error
 
-      // 3. Send notification to the bidder
+      // 3. Send notification to the bidder directly (no user_roles lookup needed)
       try {
-        const { data: userData } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('user_email', bidData.bidder)
-          .single()
-
-        if (userData) {
-          await supabase.from('notifications').insert({
-            user_email: bidData.bidder,
-            type: newStatus === 'approved' ? 'AWARDED_TENDER' : 'REJECTED_BID',
-            title: newStatus === 'approved' ? 'Bid Approved!' : 'Bid Update',
-            message: newStatus === 'approved'
-              ? `Congratulations! Your bid for "${tender?.title}" has been approved.`
-              : `Your bid for "${tender?.title}" was not successful.`,
-            tender_id: id,
-            is_read: false
-          })
-        }
-
-        // If approving, notify others who were automatically rejected by the DB trigger
-        if (newStatus === 'approved') {
-          const { data: otherBids } = await supabase
-            .from('bids')
-            .select('bidder')
-            .eq('tender_id', id)
-            .neq('id', bidId)
-            .eq('status', 'rejected') // They should be rejected now by trigger
-
-          if (otherBids && otherBids.length > 0) {
-            const otherEmails = otherBids.map(b => b.bidder)
-            const { data: otherRoles } = await supabase
-              .from('user_roles')
-              .select('user_id, user_email')
-              .in('user_email', otherEmails)
-
-            if (otherRoles && otherRoles.length > 0) {
-              const otherNotifs = otherRoles.map(r => ({
-                user_email: r.user_email,
-                type: 'REJECTED_BID',
-                title: 'Bid Update',
-                message: `The tender "${tender?.title}" has been awarded to another bidder.`,
-                tender_id: id,
-                is_read: false
-              }))
-              await supabase.from('notifications').insert(otherNotifs)
-            }
-          }
-        }
+        await supabase.from('notifications').insert({
+          user_email: bidData.bidder,
+          type: newStatus === 'approved' ? 'AWARDED_TENDER' : 'REJECTED_BID',
+          title: newStatus === 'approved' ? 'Bid Approved!' : 'Bid Update',
+          message: newStatus === 'approved'
+            ? `Congratulations! Your bid for "${tender?.title}" has been approved.`
+            : `Your bid for "${tender?.title}" was not successful.`,
+          tender_id: id,
+          is_read: false
+        })
       } catch (notifErr) {
         console.error('Failed to send notification:', notifErr)
       }
@@ -164,74 +146,33 @@ export default function TenderBids() {
   }
 
   async function handleFinalizeTender() {
-    if (!window.confirm("Are you sure you want to close this tender and finalize your team? All unapproved bids will be automatically rejected.")) {
+    if (!window.confirm("Finalizing this tender will open a contract generation page. Proceed?")) {
       return
     }
 
     try {
-      setLoading(true)
-
-      // 1. Fetch bids that will be rejected before we update them
-      const { data: bidsToReject } = await supabase
+      // Get all approved bids
+      const { data: approvedBids, error: bidsError } = await supabase
         .from('bids')
-        .select('bidder')
+        .select('*')
         .eq('tender_id', id)
-        .eq('status', 'submitted')
-
-      // 2. Update tender status
-      const { error: tenderError } = await supabase
-        .from('tenders')
-        .update({ status: 'closed' })
-        .eq('id', id)
-
-      if (tenderError) throw tenderError
-
-      // 3. Reject all remaining 'submitted' bids
-      const { error: bidsError } = await supabase
-        .from('bids')
-        .update({ status: 'rejected' })
-        .eq('tender_id', id)
-        .eq('status', 'submitted')
+        .eq('status', 'approved')
 
       if (bidsError) throw bidsError
 
-      // 4. Notify rejected bidders
-      try {
-        if (bidsToReject && bidsToReject.length > 0) {
-          const emails = bidsToReject.map(b => b.bidder)
-          const { data: userRoles } = await supabase
-            .from('user_roles')
-            .select('user_email, user_id')
-            .in('user_email', emails)
-
-          if (userRoles && userRoles.length > 0) {
-            const notifications = userRoles.map(role => ({
-              user_email: role.user_email,
-              type: 'REJECTED_BID',
-              title: 'Tender Closed',
-              message: `The tender "${tender?.title}" has been closed and your bid was not successful.`,
-              tender_id: id,
-              is_read: false
-            }))
-
-            await supabase.from('notifications').insert(notifications)
-          }
-        }
-      } catch (notifErr) {
-        console.error('Failed to notify rejected bidders:', notifErr)
+      if (!approvedBids || approvedBids.length === 0) {
+        toast.error('Please approve at least 2 bids before finalizing')
+        return
       }
 
-      toast.success('Tender finalized successfully')
-
-      await fetchTenderDetails()
-      await fetchBids()
+      // Navigate to contract page
+      navigate(`/contract/${id}`)
     } catch (err) {
-      console.error('Error finalizing tender:', err)
-      toast.error(`Failed to finalize tender: ${err?.message || 'Unknown error'}`)
-    } finally {
-      setLoading(false)
+      console.error('Error preparing finalization:', err)
+      toast.error(`Failed to prepare finalization: ${err?.message || 'Unknown error'}`)
     }
   }
+
 
   function getStatusColor(status) {
     switch (status) {
@@ -297,12 +238,38 @@ export default function TenderBids() {
             )}
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground">
-              <p>Total Bids: {bids.length}</p>
-              {tender.budget && <p>Budget: R{tender.budget}</p>}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="text-sm text-muted-foreground">
+                <p>Total Bids: {bids.length}</p>
+                {tender.budget && <p>Budget: R{tender.budget}</p>}
+                <p>Status: <span className="capitalize font-medium text-foreground">{tender.status}</span></p>
+              </div>
+              {tender.project_id && (
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                  <div className="p-2 bg-blue-100 text-blue-600 rounded-md">
+                    <IconFileText className="size-4" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-blue-500 tracking-wider">Sub-tender for Project</p>
+                    <Button
+                      variant="link"
+                      className="h-auto p-0 text-blue-700 font-semibold"
+                      onClick={() => navigate(`/projects`)} // Assuming /projects is the route
+                    >
+                      View Parent Project
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {tender?.status === 'closed' && contract && (
+        <div className="mb-6">
+          <ContractProgress tenderId={id} contractId={contract.id} />
+        </div>
       )}
 
       {error && (
@@ -329,9 +296,7 @@ export default function TenderBids() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Bidder</TableHead>
-                  {tender?.required_roles?.length > 0 && (
-                    <TableHead>Role</TableHead>
-                  )}
+                  <TableHead>Role</TableHead>
                   <TableHead>Bid Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Submitted At</TableHead>
@@ -350,13 +315,11 @@ export default function TenderBids() {
                         </span>
                       )}
                     </TableCell>
-                    {tender?.required_roles?.length > 0 && (
-                      <TableCell>
-                        <span className="inline-flex items-center bg-secondary/50 text-secondary-foreground text-xs px-2 py-1 rounded border">
-                          {bid.role || '—'}
-                        </span>
-                      </TableCell>
-                    )}
+                    <TableCell>
+                      <span className="inline-flex items-center bg-secondary/50 text-secondary-foreground text-xs px-2 py-1 rounded border">
+                        {bid.role === 'supplier' ? 'Supplier' : bid.role || '—'}
+                      </span>
+                    </TableCell>
                     <TableCell>R{parseFloat(bid.bid_amount).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell>
                       <span className={`rounded-full px-2 py-1 text-xs font-medium border capitalize ${getStatusColor(bid.status)}`}>
@@ -428,6 +391,7 @@ export default function TenderBids() {
           </CardContent>
         </Card>
       )}
+
     </div>
   )
 }

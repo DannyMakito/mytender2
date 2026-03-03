@@ -15,6 +15,7 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconFileCheck,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -44,6 +45,11 @@ const getNavData = (userEmail, unreadCount = 0) => ({
       title: "Tenders",
       url: "/tenders",
       icon: IconListDetails,
+    },
+    {
+      title: "Contracts",
+      url: "/bcontracts",
+      icon: IconFileCheck,
     },
     {
       title: "Notifications",

@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext"
 import ContractorLayout from "./ContractorLayout"
 import BidderLayout from "@/components/bidder/BidderLayout"
 import AdminLayout from "./AdminLayout"
+import SupplierLayout from "./SupplierLayout"
 import { Outlet } from "react-router-dom"
 
 export default function MainLayout() {
@@ -32,6 +33,8 @@ export default function MainLayout() {
         return <ContractorLayout />
     } else if (role === 'pro') {
         return <BidderLayout />
+    } else if (role === 'supplier') {
+        return <SupplierLayout />
     } else if (role === 'admin') {
         return <AdminLayout />
     }

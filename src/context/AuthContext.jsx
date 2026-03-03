@@ -97,9 +97,9 @@ export function AuthProvider({ children }) {
   // Sign up function
   const signUp = async (email, password, selectedRole) => {
     try {
-      // Validate role - only 'client' and 'pro' are allowed
-      if (!selectedRole || !['client', 'pro'].includes(selectedRole)) {
-        throw new Error('Please select a valid role (Client or Professional)')
+      // Validate role - only 'client', 'pro', and 'supplier' are allowed
+      if (!selectedRole || !['client', 'pro', 'supplier'].includes(selectedRole)) {
+        throw new Error('Please select a valid role (Client, Professional or Supplier)')
       }
 
       // Sign up user with Supabase Auth
@@ -255,6 +255,8 @@ export function AuthProvider({ children }) {
       navigate('/cdashboard')
     } else if (roleForNavigation === 'pro') {
       navigate('/bdashboard')
+    } else if (roleForNavigation === 'supplier') {
+      navigate('/sdashboard')
     } else if (roleForNavigation === 'admin') {
       navigate('/adashboard')
     } else {

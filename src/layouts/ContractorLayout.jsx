@@ -10,6 +10,7 @@ const CONTRACTOR_ROUTES = [
   '/cdashboard',
   '/projects',
   '/tender',
+  '/contract',
   '/teams',
   '/cdocuments',
   '/cdocuments/templates',
@@ -33,8 +34,8 @@ const isContractorRoute = (pathname, userRole) => {
     }
     return true
   }
-  // Check if path starts with /tender/ or /cdocuments/ (for dynamic routes)
-  if (pathname.startsWith('/tender/') || pathname.startsWith('/cdocuments/')) {
+  // Check if path starts with /tender/, /contract/, or /cdocuments/ (for dynamic routes)
+  if (pathname.startsWith('/tender/') || pathname.startsWith('/contract/') || pathname.startsWith('/cdocuments/')) {
     return true
   }
   return false

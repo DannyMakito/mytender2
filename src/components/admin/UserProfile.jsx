@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog"
 import { useAuth } from '@/context/AuthContext'
 import { toast } from 'sonner'
+import supabase from '../../../supabase-client'
 
 const UserProfile = () => {
     const { id } = useParams()

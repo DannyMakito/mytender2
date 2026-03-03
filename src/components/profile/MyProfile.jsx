@@ -143,7 +143,7 @@ const MyProfile = () => {
                     <p className="text-muted-foreground">View and manage your account details</p>
                 </div>
             </div>
- 
+
             {/* Account Status Banner */}
             {getStatusBadge(profile.account_status)}
 
@@ -342,6 +342,12 @@ const MyProfile = () => {
                                     <Label className="text-muted-foreground">Business Address</Label>
                                     <p className="font-medium">{profile.business_address || 'N/A'}</p>
                                 </div>
+                                {role === 'pro' && (
+                                    <div className="space-y-1">
+                                        <Label className="text-muted-foreground">Specialization</Label>
+                                        <p className="font-medium">{profile.specialization || 'N/A'}</p>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-muted-foreground">Description</Label>

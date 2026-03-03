@@ -40,7 +40,7 @@ function daysUntil(dateStr) {
 export default function TenderDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, role } = useAuth()
   const [tender, setTender] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -52,6 +52,7 @@ export default function TenderDetails() {
   const [bidError, setBidError] = useState("")
   const [userBid, setUserBid] = useState(null)
   const [selectedRole, setSelectedRole] = useState("")
+  const [bidRole, setBidRole] = useState(role === 'supplier' ? 'supplier' : '')
 
   useEffect(() => {
     if (id && user?.email) {
@@ -110,6 +111,8 @@ export default function TenderDetails() {
     setBidAmount("")
     setSelectedFile(null)
     setSelectedRole("")
+    // Auto-set bid role based on user role
+    setBidRole(role === 'supplier' ? 'supplier' : '')
   }
 
   function handleCloseBidModal() {
@@ -162,7 +165,8 @@ export default function TenderDetails() {
       return
     }
 
-    if (tender?.required_roles?.length > 0 && !selectedRole) {
+    // For professional bidders with multi-role tenders, require role selection
+    if (role === 'pro' && tender?.required_roles?.length > 0 && !selectedRole) {
       setBidError("Please select which role you are bidding for")
       return
     }
@@ -184,6 +188,7 @@ export default function TenderDetails() {
       const proposalUrl = await uploadProposal(selectedFile)
 
       // Create bid in database
+      const bidRoleValue = role === 'supplier' ? 'supplier' : (tender?.required_roles?.length > 0 ? selectedRole : 'pro')
       const { data, error } = await supabase
         .from('bids')
         .insert({
@@ -192,12 +197,29 @@ export default function TenderDetails() {
           bid_amount: amount,
           proposal_url: proposalUrl,
           status: 'submitted',
-          role: tender?.required_roles?.length > 0 ? selectedRole : null
+          role: bidRoleValue
         })
         .select()
         .single()
 
       if (error) throw error
+
+      // Send NEW_BID notification to the tender owner
+      try {
+        if (tender?.posted_by) {
+          const roleDisplay = role === 'supplier' ? 'Supplier' : selectedRole
+          await supabase.from('notifications').insert({
+            user_email: tender.posted_by,
+            type: 'NEW_BID',
+            title: 'New Bid Received',
+            message: `A new bid of R${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2 })} was placed on your tender "${tender.title}" by ${user.email}${roleDisplay ? ` for (Role: ${roleDisplay})` : ''}.`,
+            tender_id: id,
+            is_read: false
+          })
+        }
+      } catch (notifErr) {
+        console.error('Failed to send NEW_BID notification:', notifErr)
+      }
 
       // Show success toast
       toast.success('Bid submitted successfully!', {
@@ -381,8 +403,8 @@ export default function TenderDetails() {
 
           <form onSubmit={handleSubmitBid}>
             <div className="space-y-4 py-4">
-              {/* Role Selection (If applicable) */}
-              {tender?.required_roles?.length > 0 && (
+              {/* Role Selection (If applicable - only for professionals with multi-role tenders) */}
+              {role === 'pro' && tender?.required_roles?.length > 0 && (
                 <div className="space-y-2">
                   <label htmlFor="roleSelect" className="text-sm font-medium">
                     Applying for Role <span className="text-red-500">*</span>
@@ -392,13 +414,23 @@ export default function TenderDetails() {
                       <SelectValue placeholder="Select a role..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {tender.required_roles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
+                      {tender.required_roles.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {r}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              )}
+
+              {/* Role Display for Suppliers */}
+              {role === 'supplier' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Bidding as</label>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm font-medium text-blue-900">Supplier</p>
+                  </div>
                 </div>
               )}
 

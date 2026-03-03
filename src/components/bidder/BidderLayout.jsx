@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext"
 const BIDDER_ROUTES = [
   '/bdashboard',
   '/tenders',
+  '/bcontracts',
   '/bidder-projects',
   '/teams',
   '/bdocuments',
@@ -38,8 +39,8 @@ const isBidderRoute = (pathname, userRole) => {
     }
     return true
   }
-  // Check if path starts with /tenders/ or /bdocuments/ (for dynamic routes)
-  if (pathname.startsWith('/tenders/') || pathname.startsWith('/bdocuments/')) {
+  // Check if path starts with /tenders/, /bcontracts/, or /bdocuments/ (for dynamic routes)
+  if (pathname.startsWith('/tenders/') || pathname.startsWith('/bcontracts/') || pathname.startsWith('/bdocuments/')) {
     return true
   }
   return false

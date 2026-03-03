@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useLocation } from "react-router-dom"
 import {
   Card,
   CardHeader,
@@ -55,12 +55,13 @@ function daysUntil(dateStr) {
 
 export default function Tender() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [tenders, setTenders] = useState([])
   const [sheetOpen, setSheetOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const { user, getMyProfile } = useAuth()
+  const { user, getMyProfile, role } = useAuth()
   const [accountStatus, setAccountStatus] = useState(null)
 
   const [form, setForm] = useState({
@@ -72,9 +73,14 @@ export default function Tender() {
     closingDate: "",
     document_url: "",
     required_roles: [],
+    tender_type: "pro", // "pro" or "supplier"
+    status: "open",
+    collaborators: [],
+    project_id: null,
   })
 
   const [roleInput, setRoleInput] = useState("")
+  const [collaboratorInput, setCollaboratorInput] = useState("")
   const [allowCompany, setAllowCompany] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
 
@@ -92,13 +98,52 @@ export default function Tender() {
     setForm(f => ({ ...f, required_roles: f.required_roles.filter(r => r !== roleToRemove) }))
   }
 
+  const handleAddCollaborator = (e) => {
+    if (e.key === 'Enter' || e.type === 'click') {
+      e.preventDefault()
+      const email = collaboratorInput.trim()
+      if (email && email.includes('@') && !form.collaborators.includes(email)) {
+        setForm(f => ({ ...f, collaborators: [...f.collaborators, email] }))
+        setCollaboratorInput("")
+      }
+    }
+  }
+
+  const handleRemoveCollaborator = (emailToRemove) => {
+    setForm(f => ({ ...f, collaborators: f.collaborators.filter(e => e !== emailToRemove) }))
+  }
+
   // Fetch tenders from Supabase
   useEffect(() => {
     if (user?.email) {
       fetchTenders()
       checkAccountStatus()
+
+      // Handle project-linked tender creation from query params
+      const params = new URLSearchParams(location.search)
+      const projectId = params.get('projectId')
+      if (projectId) {
+        setForm(f => ({
+          ...f,
+          project_id: projectId,
+          tender_type: 'supplier', // Default to supplier if linked to project
+          category: 'Supplier'
+        }))
+        setSheetOpen(true)
+      }
     }
-  }, [user?.email])
+  }, [user?.email, location.search])
+
+  // Auto-set tender type based on user role when form opens
+  useEffect(() => {
+    if (sheetOpen && role) {
+      const defaultTenderType = role === 'supplier' ? 'supplier' : 'pro'
+      // Only auto-set if user hasn't explicitly changed it from default
+      if (form.tender_type === 'pro') {
+        setForm(f => ({ ...f, tender_type: defaultTenderType }))
+      }
+    }
+  }, [sheetOpen, role])
 
   const checkAccountStatus = async () => {
     if (!user) return
@@ -115,7 +160,7 @@ export default function Tender() {
       const { data, error } = await supabase
         .from('tenders')
         .select('*')
-        .eq('posted_by', user?.email || '')
+        .or(`posted_by.eq.${user?.email || ''},collaborators.cs.{${user?.email || ''}}`)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -198,15 +243,32 @@ export default function Tender() {
         closing_date: form.closingDate || null,
         document_url: documentUrl || null,
         posted_by: user.email,
-        status: 'open',
+        status: form.status || 'open',
         required_roles: rolesToSave,
+        tender_type: form.tender_type,
+        collaborators: form.collaborators,
+        project_id: form.project_id || null,
       }
 
-      let { data, error } = await supabase
-        .from('tenders')
-        .insert([newTender])
-        .select()
-        .single()
+      let result
+      if (form.id) {
+        // Update existing draft
+        result = await supabase
+          .from('tenders')
+          .update(newTender)
+          .eq('id', form.id)
+          .select()
+          .single()
+      } else {
+        // Insert new tender
+        result = await supabase
+          .from('tenders')
+          .insert([newTender])
+          .select()
+          .single()
+      }
+
+      let { data, error } = result
 
       // Attempt auto-fix for RLS error (missing/incorrect role)
       if (error && error.code === '42501') {
@@ -219,12 +281,10 @@ export default function Tender() {
           })
 
           if (!roleError) {
-            // Retry insert after role fix
-            const retry = await supabase
-              .from('tenders')
-              .insert([newTender])
-              .select()
-              .single()
+            // Retry operation after role fix
+            const retry = form.id
+              ? await supabase.from('tenders').update(newTender).eq('id', form.id).select().single()
+              : await supabase.from('tenders').insert([newTender]).select().single()
 
             if (!retry.error) {
               error = null
@@ -254,6 +314,9 @@ export default function Tender() {
         closingDate: "",
         document_url: "",
         required_roles: [],
+        tender_type: "pro",
+        status: "open",
+        collaborators: [],
       })
       setSelectedFile(null)
       setAllowCompany(false)
@@ -323,11 +386,36 @@ export default function Tender() {
           </Button>
         )}
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetContent side="right" className="w-full sm:w-3/4 sm:max-w-sm overflow-y-auto">
-
+          <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Create New Tender</SheetTitle>
+              <SheetDescription>Fill in the details below to post a new tender.</SheetDescription>
+            </SheetHeader>
 
             <form onSubmit={handleCreate} className="mt-6">
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Tender Type</label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={form.tender_type === 'pro' ? 'default' : 'outline'}
+                      className="flex-1"
+                      onClick={() => update('tender_type', 'pro')}
+                    >
+                      Project (Pro)
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={form.tender_type === 'supplier' ? 'default' : 'outline'}
+                      className="flex-1"
+                      onClick={() => update('tender_type', 'supplier')}
+                    >
+                      Quotation (Supplier)
+                    </Button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Title *</label>
                   <Input
@@ -351,16 +439,18 @@ export default function Tender() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Budget</label>
-                    <Input
-                      placeholder="Enter budget amount"
-                      value={form.budget}
-                      onChange={(e) => update("budget", e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
+                  {form.tender_type === 'pro' && (
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Budget</label>
+                      <Input
+                        placeholder="Enter budget amount"
+                        value={form.budget}
+                        onChange={(e) => update("budget", e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+                  <div className={form.tender_type === 'pro' ? '' : 'col-span-2'}>
                     <label className="block text-sm font-medium mb-1">Province</label>
                     <Select value={form.province} onValueChange={(value) => update("province", value)} required>
                       <SelectTrigger className="w-full">
@@ -377,26 +467,34 @@ export default function Tender() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
-                  <Select value={form.category} onValueChange={(value) => update("category", value)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {form.tender_type === 'pro' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Category</label>
+                    <Select value={form.category} onValueChange={(value) => update("category", value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Roles Section */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Required Roles</label>
-                  <p className="text-xs text-muted-foreground mb-2">Split the tender into specific roles (e.g. Plumbing, Electrical).</p>
+                  <label className="block text-sm font-medium mb-1">
+                    {form.tender_type === 'supplier' ? 'Requirements' : 'Required Roles'}
+                  </label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {form.tender_type === 'supplier'
+                      ? 'Add items or services required (e.g. 50x Laptops, Catering for 100).'
+                      : 'Split the tender into specific roles (e.g. Plumbing, Electrical).'}
+                  </p>
                   <div className="flex items-center gap-2 mb-2">
                     <Input
                       placeholder="Type a role and press Enter"
@@ -419,18 +517,20 @@ export default function Tender() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 mt-3 p-3 bg-muted/50 rounded-md border text-sm">
-                    <input
-                      type="checkbox"
-                      id="allowCompany"
-                      checked={allowCompany}
-                      onChange={(e) => setAllowCompany(e.target.checked)}
-                      className="rounded border-gray-300 w-4 h-4 cursor-pointer"
-                    />
-                    <label htmlFor="allowCompany" className="cursor-pointer font-medium">
-                      Also allow a Company to bid for the entire project (All Roles)
-                    </label>
-                  </div>
+                  {form.tender_type === 'pro' && (
+                    <div className="flex items-center gap-2 mt-3 p-3 bg-muted/50 rounded-md border text-sm">
+                      <input
+                        type="checkbox"
+                        id="allowCompany"
+                        checked={allowCompany}
+                        onChange={(e) => setAllowCompany(e.target.checked)}
+                        className="rounded border-gray-300 w-4 h-4 cursor-pointer"
+                      />
+                      <label htmlFor="allowCompany" className="cursor-pointer font-medium">
+                        Also allow a Company to bid for the entire project (All Roles)
+                      </label>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -445,45 +545,56 @@ export default function Tender() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Document</label>
-                  <div className="flex items-center gap-2">
-                    <label className="flex-1 cursor-pointer">
-                      <input
-                        type="file"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                  <label className="block text-sm font-medium mb-1">Upload Document {form.tender_type === 'supplier' ? '(Invoice/Quote Template)' : '(Project Specification)'}</label>
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    className="w-full rounded-md border px-3 py-2 cursor-pointer"
+                    accept=".pdf,.doc,.docx,.xlsx"
+                  />
+                  {selectedFile && (
+                    <p className="text-xs text-green-600 mt-1">✓ {selectedFile.name} selected</p>
+                  )}
+                </div>
+
+                {form.tender_type === 'pro' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Collaborators (Invited to Edit)</label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Enter email addresses of professionals who can help you draft this tender.
+                    </p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        placeholder="Enter collaborator email"
+                        value={collaboratorInput}
+                        onChange={(e) => setCollaboratorInput(e.target.value)}
+                        onKeyDown={handleAddCollaborator}
                       />
-                      <div className="flex items-center gap-2 w-full rounded-md border px-3 py-2 hover:bg-accent cursor-pointer">
-                        <IconUpload className="size-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          {selectedFile ? selectedFile.name : "Upload document (PDF, DOC, XLS)"}
-                        </span>
+                      <Button type="button" onClick={handleAddCollaborator} variant="secondary">Add</Button>
+                    </div>
+                    {form.collaborators.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {form.collaborators.map(email => (
+                          <span key={email} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-md border border-blue-100">
+                            {email}
+                            <button type="button" onClick={() => handleRemoveCollaborator(email)} className="hover:text-destructive transition-colors">
+                              <IconX className="size-3" />
+                            </button>
+                          </span>
+                        ))}
                       </div>
-                    </label>
-                    {selectedFile && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedFile(null)
-                          const fileInput = document.querySelector('input[type="file"]')
-                          if (fileInput) fileInput.value = ''
-                        }}
-                      >
-                        Clear
-                      </Button>
                     )}
                   </div>
-                </div>
-                <div className="pt-4">
+                )}
+
+                <div className="pt-4 flex flex-col gap-2">
                   <Button
                     type="submit"
                     className="w-full"
                     disabled={loading || uploading}
+                    onClick={() => update('status', 'open')}
                   >
-                    {uploading ? 'Uploading...' : loading ? 'Creating...' : 'Create Tender'}
+                    {uploading ? 'Uploading...' : loading ? 'Publishing...' : 'Publish Tender'}
                   </Button>
                 </div>
               </div>
@@ -511,7 +622,12 @@ export default function Tender() {
                       <span className="text-xs text-muted-foreground">Company: {t.posted_by || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-green-50 text-green-700 px-2 py-1 text-xs font-medium border border-green-100 capitalize">{t.status}</span>
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium border capitalize ${t.status === 'draft' ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                        t.status === 'open' ? 'bg-green-50 text-green-700 border-green-100' :
+                          'bg-gray-50 text-gray-700 border-gray-100'
+                        }`}>
+                        {t.status}
+                      </span>
                     </div>
                   </div>
                 </CardHeader>
@@ -592,13 +708,30 @@ export default function Tender() {
                         View Document
                       </Button>
                     )}
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => navigate(`/tender/${t.id}/bids`)}
-                    >
-                      View Bids
-                    </Button>
+                    {t.status === 'draft' && (
+                      <Button
+                        variant="default"
+                        className="w-full bg-orange-600 hover:bg-orange-700"
+                        onClick={() => {
+                          setForm({
+                            ...t,
+                            closingDate: t.closing_date || "",
+                          })
+                          setSheetOpen(true)
+                        }}
+                      >
+                        Edit Draft
+                      </Button>
+                    )}
+                    {t.status === 'open' && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => navigate(`/tender/${t.id}/bids`)}
+                      >
+                        View Bids
+                      </Button>
+                    )}
                     <Button className="w-full">View Details</Button>
                   </div>
                 </CardFooter>

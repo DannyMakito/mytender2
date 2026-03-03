@@ -34,7 +34,12 @@ const CATEGORIES = [
 ]
 
 const INDUSTRIES = [
-    'Housing development', 'office spaces','resturants ', 'student accommodation','retail', 'beauty salon','plumbing','Other Service Activities'
+    'Housing development', 'office spaces', 'resturants ', 'student accommodation', 'retail', 'beauty salon', 'plumbing', 'Other Service Activities'
+]
+
+const SPECIALIZATIONS = [
+    'Architecture', 'Interior Design', 'Structural Engineering', 'Electrical Engineering',
+    'Mechanical Engineering', 'Quantity Surveying', 'Project Management', 'Consulting', 'Contracting'
 ]
 
 // --- Step Components Defined Outside ---
@@ -120,10 +125,9 @@ const Step2Business = ({ formData, handleInputChange, role }) => {
                         <SelectValue placeholder="Select Type" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="Private Company (Pty Ltd)">Private Company (Pty Ltd)</SelectItem>
-                        <SelectItem value="Sole Proprietor">Sole Proprietor</SelectItem>
-                        <SelectItem value="Free lance">Free lance</SelectItem>
-                        <SelectItem value="Public Company">Public Company</SelectItem>
+                        <SelectItem value="Private Company (Pty Ltd)">Comercial Company (Pty Ltd)</SelectItem>
+                        <SelectItem value="Residential">Residential</SelectItem>
+                        <SelectItem value="Supplier">Supplier</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -143,6 +147,35 @@ const Step2Business = ({ formData, handleInputChange, role }) => {
                     </SelectContent>
                 </Select>
             </div>
+            {isPro && (
+                <div className="space-y-2">
+                    <Label>Specialization</Label>
+                    <Select
+                        value={formData.specialization}
+                        onValueChange={(val) => handleInputChange('specialization', val)}
+                    >
+                        <SelectTrigger className="h-11">
+                            <SelectValue placeholder="Select Specialization" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {SPECIALIZATIONS.map(s => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+            {role === 'supplier' && (
+                <div className="space-y-2">
+                    <Label>CIPC Registration Number</Label>
+                    <Input
+                        value={formData.cipcNumber}
+                        onChange={(e) => handleInputChange('cipcNumber', e.target.value)}
+                        placeholder="2024/123456/07"
+                        className="h-11"
+                    />
+                </div>
+            )}
             <div className="space-y-2">
                 <Label>{isPro ? 'Work Description' : 'Business Description'}</Label>
                 <textarea
@@ -194,7 +227,7 @@ const Step3Location = ({ formData, handleInputChange, handleCheckboxChange }) =>
     </div>
 )
 
-const Step4Interests = ({ formData, handleInputChange, handleCheckboxChange }) => (
+const Step4Interests = ({ formData, handleInputChange, handleCheckboxChange, role }) => (
     <div className="space-y-6 animate-in slide-in-from-right duration-500">
         <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900">What type of tenders interest you?</h2>
@@ -218,24 +251,26 @@ const Step4Interests = ({ formData, handleInputChange, handleCheckboxChange }) =
             ))}
         </div>
 
-        <div className="space-y-2 mt-4">
-            <Label>Budget Range (Typical Project Size)</Label>
-            <Select
-                value={formData.budgetRange}
-                onValueChange={(val) => handleInputChange('budgetRange', val)}
-            >
-                <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select your typical project budget" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="0-50k">R0 - R50,000</SelectItem>
-                    <SelectItem value="50k-500k">R50,000 - R500,000</SelectItem>
-                    <SelectItem value="500k-1m">R500,000 - R1 Million</SelectItem>
-                    <SelectItem value="1m-5m">R1 Million - R5 Million</SelectItem>
-                    <SelectItem value="5m+">R5 Million+</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
+        {role !== 'supplier' && (
+            <div className="space-y-2 mt-4">
+                <Label>Budget Range (Typical Project Size)</Label>
+                <Select
+                    value={formData.budgetRange}
+                    onValueChange={(val) => handleInputChange('budgetRange', val)}
+                >
+                    <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Select your typical project budget" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="0-50k">R0 - R50,000</SelectItem>
+                        <SelectItem value="50k-500k">R50,000 - R500,000</SelectItem>
+                        <SelectItem value="500k-1m">R500,000 - R1 Million</SelectItem>
+                        <SelectItem value="1m-5m">R1 Million - R5 Million</SelectItem>
+                        <SelectItem value="5m+">R5 Million+</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+        )}
     </div>
 )
 
@@ -254,9 +289,7 @@ const Step5Documents = ({ formData, handleDocumentUpload, uploading, role }) => 
                     <div>
                         <p className="font-medium text-blue-800">Required Documents</p>
                         <ul className="text-sm text-blue-700 mt-1 space-y-1">
-                            <li>• CIPC Certificate / Company Registration</li>
-                            <li>• Tax Clearance Certificate</li>
-                            <li>• Letter of Good Standing</li>
+                            <li>• {role === 'supplier' ? 'CIPC Document' : 'ID'}</li>
                         </ul>
                     </div>
                 </div>
@@ -275,7 +308,7 @@ const Step5Documents = ({ formData, handleDocumentUpload, uploading, role }) => 
             ) : (
                 <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-lime-300 transition-colors">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="font-medium text-gray-700 mb-1">Upload your business document</p>
+                    <p className="font-medium text-gray-700 mb-1">Upload your {role === 'supplier' ? 'CIPC registration' : 'business'} document</p>
                     <p className="text-sm text-muted-foreground mb-4">PDF, JPG, or PNG up to 5MB</p>
                     <input
                         type="file"
@@ -461,11 +494,13 @@ export default function Onboarding() {
         businessName: '',
         businessType: '',
         industry: '',
+        cipcNumber: '',
         businessDescription: '',
         businessAddress: '',
         operatingRegions: [],
         tenderCategories: [],
         budgetRange: '',
+        specialization: '',
         businessDocumentUrl: null,
         notifications: {
             email: true,
@@ -553,13 +588,25 @@ export default function Onboarding() {
             return formData.firstName && formData.lastName && formData.phone && formData.province
         }
         if (step === 2) {
-            return formData.businessName && formData.businessType && formData.industry && formData.businessDescription
+            const basicFields = formData.businessName && formData.businessType && formData.industry && formData.businessDescription
+            if (role === 'supplier') {
+                return basicFields && formData.cipcNumber
+            }
+            if (role === 'pro') {
+                return basicFields && formData.specialization
+            }
+            return basicFields
         }
         if (step === 3) {
             return formData.businessAddress && formData.operatingRegions.length > 0
         }
-        if (step === 4 && role === 'pro') {
-            return formData.tenderCategories.length > 0 && formData.budgetRange
+        if (step === 4) {
+            if (role === 'pro' || role === 'supplier') {
+                const hasCategories = formData.tenderCategories.length > 0
+                if (role === 'supplier') return hasCategories
+                return hasCategories && formData.budgetRange
+            }
+            return true
         }
         return true
     }
@@ -608,8 +655,10 @@ export default function Onboarding() {
                 operating_regions: formData.operatingRegions,
                 tender_categories: formData.tenderCategories,
                 budget_range: formData.budgetRange,
+                cipc_number: formData.cipcNumber,
                 notifications: formData.notifications,
                 business_document_url: formData.businessDocumentUrl,
+                specialization: formData.specialization,
                 onboarding_completed: false, // Stays false until admin approves
                 account_status: 'pending', // Account pending admin review
                 role: role,
@@ -702,7 +751,7 @@ export default function Onboarding() {
             case 1: return <Step1Personal formData={formData} handleInputChange={handleInputChange} />
             case 2: return <Step2Business formData={formData} handleInputChange={handleInputChange} role={role} />
             case 3: return <Step3Location formData={formData} handleInputChange={handleInputChange} handleCheckboxChange={handleCheckboxChange} />
-            case 4: return <Step4Interests formData={formData} handleInputChange={handleInputChange} handleCheckboxChange={handleCheckboxChange} />
+            case 4: return <Step4Interests formData={formData} handleInputChange={handleInputChange} handleCheckboxChange={handleCheckboxChange} role={role} />
             case 5: return <Step5Documents formData={formData} handleDocumentUpload={handleDocumentUpload} uploading={uploading} role={role} />
             case 6: return <Step7Notifications formData={formData} handleNotificationChange={handleNotificationChange} role={role} />
             case 7: return <Step8Subscription role={role} />
