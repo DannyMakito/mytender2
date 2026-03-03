@@ -61,8 +61,7 @@ export default function Tender() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const { user, getMyProfile, role } = useAuth()
-  const [accountStatus, setAccountStatus] = useState(null)
+  const { user, role, accountStatus } = useAuth()
 
   const [form, setForm] = useState({
     title: "",
@@ -117,7 +116,6 @@ export default function Tender() {
   useEffect(() => {
     if (user?.email) {
       fetchTenders()
-      checkAccountStatus()
 
       // Handle project-linked tender creation from query params
       const params = new URLSearchParams(location.search)
@@ -145,14 +143,6 @@ export default function Tender() {
     }
   }, [sheetOpen, role])
 
-  const checkAccountStatus = async () => {
-    if (!user) return
-    const result = await getMyProfile()
-    console.log('Tender Check Status:', result)
-    if (result.success) {
-      setAccountStatus(result.profile?.account_status)
-    }
-  }
 
   const fetchTenders = async () => {
     try {

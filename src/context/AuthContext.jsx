@@ -6,6 +6,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
+  const [accountStatus, setAccountStatus] = useState(null)
   const [loading, setLoading] = useState(true)
   const [session, setSession] = useState(null)
 
@@ -27,7 +28,7 @@ export function AuthProvider({ children }) {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        fetchUserRole(session.user.email)
+        fetchUserRole(session.user.email, session.user.id)
       } else {
         setLoading(false)
       }
@@ -40,9 +41,10 @@ export function AuthProvider({ children }) {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        fetchUserRole(session.user.email)
+        fetchUserRole(session.user.email, session.user.id)
       } else {
         setRole(null)
+        setAccountStatus(null)
         setLoading(false)
       }
     })
@@ -51,42 +53,35 @@ export function AuthProvider({ children }) {
   }, [])
 
   // Fetch user role from user_roles table
-  const fetchUserRole = async (userEmail) => {
+  const fetchUserRole = async (userEmail, userId = null) => {
     try {
-      // Try using the database function first (recommended approach)
-      const { data: functionData, error: functionError } = await supabase.rpc('get_user_role', {
-        p_user_email: userEmail,
-      })
+      // 1. Fetch role from user_roles
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role, user_id')
+        .eq('user_email', userEmail)
+        .maybeSingle()
 
-      let fetchedRole = null
+      let fetchedRole = roleData?.role || null
+      setRole(fetchedRole)
 
-      if (functionError) {
-        // If function doesn't exist or fails, try direct select
-        console.warn('Function get_user_role not available, trying direct select:', functionError.message)
+      // 2. Fetch account_status from profiles
+      const targetUserId = userId || roleData?.user_id
+      if (targetUserId) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('account_status')
+          .eq('id', targetUserId)
+          .maybeSingle()
 
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_email', userEmail)
-          .single()
-
-        if (error) {
-          console.error('Error fetching role:', error)
-          setRole(null)
-          fetchedRole = null
-        } else {
-          fetchedRole = data?.role || null
-          setRole(fetchedRole)
+        if (!profileError && profileData) {
+          setAccountStatus(profileData.account_status)
         }
-      } else {
-        // Function succeeded, use the returned role
-        fetchedRole = functionData || null
-        setRole(fetchedRole)
       }
 
       return fetchedRole
     } catch (err) {
-      console.error('Error fetching role:', err)
+      console.error('Error fetching details:', err)
       setRole(null)
       return null
     } finally {
@@ -175,6 +170,7 @@ export function AuthProvider({ children }) {
       // Update local state
       setUser(authData.user)
       setRole(selectedRole)
+      setAccountStatus('pending') // New users are usually pending
       setSession(authData.session)
 
       return { success: true, user: authData.user, role: selectedRole }
@@ -213,7 +209,7 @@ export function AuthProvider({ children }) {
       }
 
       // Fetch user role and wait for it
-      const userRole = await fetchUserRole(email)
+      const userRole = await fetchUserRole(email, authData.user.id)
 
       setUser(authData.user)
       setSession(authData.session)
@@ -539,6 +535,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     role,
+    accountStatus,
     session,
     loading,
     signUp,

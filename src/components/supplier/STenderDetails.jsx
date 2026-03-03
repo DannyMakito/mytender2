@@ -35,7 +35,7 @@ import { format } from "date-fns"
 export default function STenderDetails() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { user } = useAuth()
+    const { user, accountStatus } = useAuth()
     const [tender, setTender] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
@@ -232,10 +232,18 @@ export default function STenderDetails() {
                                         Submit your quotation and invoice to bid for this tender.
                                     </p>
                                     <Button
-                                        className="w-full bg-orange-500 hover:bg-orange-600 h-11"
-                                        onClick={() => setBidModalOpen(true)}
+                                        className={`w-full h-11 ${accountStatus === 'approved' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-400 cursor-not-allowed opacity-70'}`}
+                                        onClick={() => {
+                                            if (accountStatus === 'approved') {
+                                                setBidModalOpen(true)
+                                            } else {
+                                                toast.error("Account Not Approved", {
+                                                    description: "Your account must be approved by an admin before you can submit quotations. Current status: " + (accountStatus || 'pending')
+                                                })
+                                            }
+                                        }}
                                     >
-                                        Submit Quotation
+                                        {accountStatus === 'approved' ? 'Submit Quotation' : 'Account Not Approved'}
                                     </Button>
                                 </>
                             )}

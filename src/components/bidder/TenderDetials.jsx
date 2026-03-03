@@ -40,7 +40,7 @@ function daysUntil(dateStr) {
 export default function TenderDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, role } = useAuth()
+  const { user, role, accountStatus } = useAuth()
   const [tender, setTender] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -100,6 +100,12 @@ export default function TenderDetails() {
   function handleBid() {
     if (!user?.email) {
       setError("You must be logged in to submit a bid")
+      return
+    }
+    if (accountStatus !== 'approved') {
+      toast.error("Account Verification Required", {
+        description: "Your account must be approved by an admin before you can place bids. Current status: " + (accountStatus || 'pending')
+      })
       return
     }
     if (userBid) {
@@ -382,11 +388,11 @@ export default function TenderDetails() {
           )}
           <Button
             onClick={handleBid}
-            className="flex-1"
-            disabled={tender.status === 'closed' || (days !== null && days < 0) || !!userBid}
-            style={userBid ? { backgroundColor: '#4a5565', color: '#ffff', cursor: 'not-allowed', borderColor: '#e5e7eb' } : {}}
+            className={`flex-1 ${accountStatus === 'approved' ? '' : 'bg-gray-400 cursor-not-allowed italic'}`}
+            disabled={(tender.status === 'closed' || (days !== null && days < 0) || !!userBid) && accountStatus === 'approved'}
+            style={userBid ? { backgroundColor: '#4a5565', color: '#ffff', cursor: 'not-allowed', borderColor: '#e5e7eb' } : (accountStatus !== 'approved' ? { opacity: 0.7 } : {})}
           >
-            {userBid ? 'Bid Already Placed' : 'Bid'}
+            {userBid ? 'Bid Already Placed' : accountStatus === 'approved' ? 'Bid' : 'Account Not Approved'}
           </Button>
         </CardFooter>
       </Card>
