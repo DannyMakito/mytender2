@@ -174,7 +174,7 @@ export default function STenderDetails() {
                             <div className="flex justify-between items-start mb-2">
                                 <Badge variant="outline">{tender.category || "General"}</Badge>
                                 {userBid && (
-                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
+                                    <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 flex gap-1">
                                         <IconCheck className="size-3" /> Submitted
                                     </Badge>
                                 )}
@@ -217,7 +217,7 @@ export default function STenderDetails() {
                         <CardContent className="space-y-4">
                             {userBid ? (
                                 <div className="text-center p-4 bg-muted/50 rounded-lg">
-                                    <IconReceipt2 className="size-10 mx-auto text-green-500 mb-2" />
+                                    <IconReceipt2 className="size-10 mx-auto text-orange-500 mb-2" />
                                     <p className="font-semibold text-lg">R{userBid.bid_amount.toLocaleString()}</p>
                                     <p className="text-sm text-muted-foreground">Your quotation has been submitted.</p>
                                     <Button variant="outline" className="w-full mt-4" asChild>

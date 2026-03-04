@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconPackage, IconChartBar, IconTimeline, IconPlus } from '@tabler/icons-react'
+import { IconPackage, IconChartBar, IconTimeline, IconPlus, IconLock } from '@tabler/icons-react'
 
 const columns = [
   { id: 'todo', title: 'Yet To Start' },
@@ -22,7 +22,7 @@ const columns = [
   { id: 'done', title: 'Completed' },
 ]
 
-const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, projects, selectedProjectId }) => {
+const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, projects, selectedProjectId, activeTab, setActiveTab }) => {
   const { user, role } = useAuth()
   const isClient = role === 'client'
   const isPro = role === 'pro'
@@ -37,9 +37,8 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
   const [taskEndDate, setTaskEndDate] = useState('')
   const [taskColumn, setTaskColumn] = useState('todo')
   const [taskProjectId, setTaskProjectId] = useState(selectedProjectId || (project && project.id) || (projects && projects[0] && projects[0].id) || '')
-  const [taskPriorityColor, setTaskPriorityColor] = useState('blue')
+  const [taskPriorityColor, setTaskPriorityColor] = useState('orange')
   const [isMilestone, setIsMilestone] = useState(false)
-  const [activeTab, setActiveTab] = useState('board')
   const [supplierTenders, setSupplierTenders] = useState([])
   const [fetchingSuppliers, setFetchingSuppliers] = useState(false)
 
@@ -78,7 +77,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
     setTaskDesc('')
     setTaskStartDate('')
     setTaskEndDate('')
-    setTaskPriorityColor('blue')
+    setTaskPriorityColor('orange')
     setTaskColumn('todo')
     setIsMilestone(false)
     setEditingTask(null)
@@ -91,7 +90,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
     setTaskStartDate(task.startDate || task.start_date || '')
     setTaskEndDate(task.endDate || task.end_date || '')
     setTaskColumn(task.status || 'todo')
-    setTaskPriorityColor(task.priorityColor || task.priority_color || 'blue')
+    setTaskPriorityColor(task.priorityColor || task.priority_color || 'orange')
     setIsMilestone(task.is_milestone || false)
     setEditSheetOpen(true)
   }
@@ -216,21 +215,21 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
       disabled: isClient
     })
     return (
-      <div ref={setNodeRef} id={col.id} className={`bg-card rounded-lg border p-4 min-h-[300px] ${isOver && !isClient ? 'ring-2 ring-offset-1 ring-green-200' : ''}`}>
+      <div ref={setNodeRef} id={col.id} className={`bg-card rounded-lg border p-4 min-h-[300px] ${isOver && !isClient ? 'ring-2 ring-offset-1 ring-orange-200' : ''}`}>
         {children}
       </div>
     )
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{project?.name || 'Projects'}</h2>
-        <div className="flex items-center gap-2">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold tracking-tight">{project?.name || 'Projects'}</h2>
+        <div className="flex flex-wrap items-center gap-2">
           {project?.owner_email === user?.email && !project?.is_locked && (
             <Button
               size="sm"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-orange-600 hover:bg-orange-700"
               onClick={async () => {
                 if (window.confirm('Are you sure you want to sign off and lock this project? This will freeze all tasks and financials.')) {
                   const { error } = await supabase.from('projects').update({ is_locked: true }).eq('id', project.id)
@@ -247,7 +246,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
               <IconLock className="size-3" /> Locked
             </span>
           )}
-          <div className="text-sm text-muted-foreground ml-2">A↕ Sort</div>
+          <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded ring-1 ring-inset ring-gray-200">A↕ Sort</div>
           {isPro && !project?.is_locked && (
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
@@ -271,7 +270,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
 
                     <select className="w-full rounded-md border px-3 py-2" value={taskPriorityColor} onChange={(e) => setTaskPriorityColor(e.target.value)}>
 
-                      <option value="blue">low</option>
+                      <option value="orange">low</option>
                       <option value="yellow">medium </option>
                       <option value="red">High </option>
 
@@ -296,9 +295,9 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                       id="isMilestone"
                       checked={isMilestone}
                       onChange={(e) => setIsMilestone(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                     />
-                    <label htmlFor="isMilestone" className="text-sm font-medium text-purple-700">This is a Project Milestone</label>
+                    <label htmlFor="isMilestone" className="text-sm font-medium text-orange-700">This is a Project Milestone</label>
                   </div>
 
                   <SheetFooter>
@@ -332,7 +331,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Priority</label>
                     <select className="w-full rounded-md border px-3 py-2" value={taskPriorityColor} onChange={(e) => setTaskPriorityColor(e.target.value)}>
-                      <option value="blue">low</option>
+                      <option value="orange">low</option>
                       <option value="yellow">medium</option>
                       <option value="red">High</option>
                     </select>
@@ -360,9 +359,9 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                       id="editIsMilestone"
                       checked={isMilestone}
                       onChange={(e) => setIsMilestone(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                     />
-                    <label htmlFor="editIsMilestone" className="text-sm font-medium text-purple-700">This is a Project Milestone</label>
+                    <label htmlFor="editIsMilestone" className="text-sm font-medium text-orange-700">This is a Project Milestone</label>
                   </div>
                 </div>
 
@@ -375,17 +374,19 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-        <TabsList className={`grid w-full ${isClient ? 'grid-cols-4 lg:w-[600px]' : 'grid-cols-2 lg:w-80'}`}>
-          <TabsTrigger value="board">Board</TabsTrigger>
-          {isClient && (
-            <>
-              <TabsTrigger value="supply-chain">Supply Chain</TabsTrigger>
-              <TabsTrigger value="financials">Financials</TabsTrigger>
-            </>
-          )}
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="overflow-x-auto pb-1 scrollbar-hide">
+          <TabsList className="inline-flex w-auto min-w-full lg:min-w-0 p-1 bg-muted/50">
+            <TabsTrigger value="board" className="px-4 py-2">Board</TabsTrigger>
+            {isClient && (
+              <>
+                <TabsTrigger value="supply-chain" className="px-4 py-2">Supply Chain</TabsTrigger>
+                <TabsTrigger value="financials" className="px-4 py-2">Financials</TabsTrigger>
+              </>
+            )}
+            <TabsTrigger value="timeline" className="px-4 py-2">Timeline</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="board" className="mt-4">
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -394,7 +395,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                 <Column key={col.id} col={col}>
                   <div className="flex items-center justify-between mb-4">
                     <div className="px-3 py-2 rounded-md bg-muted text-sm">{col.title}</div>
-                    <div className="text-sm rounded-full bg-green-50 px-2 py-1 text-green-700">{grouped[col.id].length}</div>
+                    <div className="text-sm rounded-full bg-orange-50 px-2 py-1 text-orange-700">{grouped[col.id].length}</div>
                   </div>
                   <div className="space-y-3">
                     {grouped[col.id].length === 0 ? (
@@ -413,7 +414,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                           const badgeMap = {
                             yellow: { cls: 'bg-yellow-100 text-yellow-800', label: 'Medium' },
                             red: { cls: 'bg-red-100 text-red-800', label: 'High' },
-                            blue: { cls: 'bg-blue-100 text-blue-800', label: 'Low' },
+                            orange: { cls: 'bg-orange-100 text-orange-800', label: 'Low' },
                           }
                           const badge = badgeMap[priorityColor] || { cls: 'bg-gray-100 text-gray-800', label: 'None' }
                           const startDate = t.startDate || t.start_date
@@ -469,7 +470,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                                     <div className="flex items-center justify-between">
                                       <CardTitle className="text-sm font-semibold">{task.title}</CardTitle>
                                       {task.is_milestone && (
-                                        <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                        <span className="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                                           Milestone
                                         </span>
                                       )}
@@ -485,10 +486,10 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                                     {task.is_milestone && (
                                       <div className="mt-4 pt-4 border-t space-y-3">
                                         <div className="flex items-center justify-between text-[11px] font-bold uppercase">
-                                          <span className={task.contractor_sign_off ? 'text-green-600' : 'text-orange-600'}>
+                                          <span className={task.contractor_sign_off ? 'text-orange-600' : 'text-amber-600'}>
                                             Contractor: {task.contractor_sign_off ? 'SIGNED' : 'PENDING'}
                                           </span>
-                                          <span className={task.client_sign_off ? 'text-green-600' : 'text-orange-600'}>
+                                          <span className={task.client_sign_off ? 'text-orange-600' : 'text-amber-600'}>
                                             Client: {task.client_sign_off ? 'SIGNED' : 'PENDING'}
                                           </span>
                                         </div>
@@ -507,7 +508,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                                             <Button
                                               size="sm"
                                               variant="secondary"
-                                              className="h-7 text-[10px] flex-1 bg-lime-100 text-lime-700 hover:bg-lime-200"
+                                              className="h-7 text-[10px] flex-1 bg-orange-100 text-orange-700 hover:bg-orange-200"
                                               onClick={() => updateTask(project.id, { ...task, client_sign_off: true })}
                                             >
                                               Client Sign Off
@@ -565,7 +566,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                   {supplierTenders.map(t => (
                     <div key={t.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">
+                        <div className="p-2 bg-orange-100 text-orange-700 rounded-lg">
                           <IconPackage className="size-5" />
                         </div>
                         <div>
@@ -578,7 +579,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                           <p className="text-sm font-medium">
                             {t.bids?.find(b => b.status === 'approved')?.bid_amount ? `R${parseFloat(t.bids.find(b => b.status === 'approved').bid_amount).toLocaleString()}` : 'Pending Selection'}
                           </p>
-                          <p className={`text-[10px] uppercase font-bold ${t.status === 'closed' ? 'text-green-600' : 'text-orange-600'}`}>
+                          <p className={`text-[10px] uppercase font-bold ${t.status === 'closed' ? 'text-orange-600' : 'text-amber-600'}`}>
                             {t.status === 'closed' ? 'Ordered' : 'Awaiting Bids'}
                           </p>
                         </div>
@@ -617,7 +618,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                 <CardTitle className="text-sm text-muted-foreground">Remaining</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">R{(totalBudget - actualSpend).toLocaleString()}</div>
+                <div className="text-2xl font-bold text-orange-600">R{(totalBudget - actualSpend).toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground mt-1">{(100 - (actualSpend / totalBudget * 100)).toFixed(1)}% of budget left</div>
               </CardContent>
             </Card>
@@ -629,7 +630,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
             </CardHeader>
             <CardContent>
               <div className="h-[200px] flex items-end gap-2 justify-around border-b pb-1">
-                <div className="w-full bg-blue-500 rounded-t" style={{ height: '80%' }}></div>
+                <div className="w-full bg-orange-300 rounded-t" style={{ height: '80%' }}></div>
                 <div className="w-full bg-orange-500 rounded-t" style={{ height: `${(actualSpend / totalBudget) * 100}%` }}></div>
               </div>
               <div className="flex justify-around mt-2 text-xs font-medium text-muted-foreground">
@@ -665,7 +666,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                           <div className="absolute left-0 top-0 w-48 truncate text-sm font-medium">{t.title}</div>
                           <div className="ml-52 relative h-6 bg-gray-100 rounded-full group cursor-pointer hover:bg-gray-200 transition-colors">
                             <div
-                              className={`absolute h-full rounded-full ${t.status === 'done' ? 'bg-green-500' : 'bg-blue-500 shadow-sm'}`}
+                              className={`absolute h-full rounded-full ${t.status === 'done' ? 'bg-orange-500' : 'bg-orange-200 shadow-sm'}`}
                               style={{
                                 left: `${Math.max(0, startDays * 2)}%`,
                                 width: `${Math.max(5, duration * 2)}%`
@@ -686,7 +687,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </div >
   )
 }
 

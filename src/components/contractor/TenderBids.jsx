@@ -177,11 +177,11 @@ export default function TenderBids() {
   function getStatusColor(status) {
     switch (status) {
       case 'approved':
-        return 'bg-green-50 text-green-700 border-green-100'
+        return 'bg-orange-100 text-orange-800 border-orange-200'
       case 'rejected':
         return 'bg-red-50 text-red-700 border-red-100'
       case 'submitted':
-        return 'bg-blue-50 text-blue-700 border-blue-100'
+        return 'bg-amber-50 text-amber-700 border-amber-100'
       default:
         return 'bg-gray-50 text-gray-700 border-gray-100'
     }
@@ -245,15 +245,15 @@ export default function TenderBids() {
                 <p>Status: <span className="capitalize font-medium text-foreground">{tender.status}</span></p>
               </div>
               {tender.project_id && (
-                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                  <div className="p-2 bg-blue-100 text-blue-600 rounded-md">
+                <div className="flex items-center gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="p-2 bg-orange-100 text-orange-600 rounded-md">
                     <IconFileText className="size-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-blue-500 tracking-wider">Sub-tender for Project</p>
+                    <p className="text-[10px] font-bold uppercase text-orange-500 tracking-wider">Sub-tender for Project</p>
                     <Button
                       variant="link"
-                      className="h-auto p-0 text-blue-700 font-semibold"
+                      className="h-auto p-0 text-orange-700 font-semibold"
                       onClick={() => navigate(`/projects`)} // Assuming /projects is the route
                     >
                       View Parent Project
@@ -310,7 +310,7 @@ export default function TenderBids() {
                     <TableCell className="font-medium">
                       {bid.bidder}
                       {bid.role === 'Company (All Roles)' && (
-                        <span className="ml-2 inline-flex items-center text-[10px] bg-blue-50 text-blue-700 border-blue-200 px-1.5 py-0.5 rounded border">
+                        <span className="ml-2 inline-flex items-center text-[10px] bg-orange-50 text-orange-700 border-orange-200 px-1.5 py-0.5 rounded border">
                           Company
                         </span>
                       )}
@@ -360,7 +360,7 @@ export default function TenderBids() {
                               size="sm"
                               onClick={() => handleStatusUpdate(bid.id, 'approved')}
                               disabled={updating === bid.id}
-                              className="text-green-600 hover:text-green-700"
+                              className="text-orange-600 hover:text-orange-700"
                             >
                               <IconCheck className="size-4" />
                               Approve

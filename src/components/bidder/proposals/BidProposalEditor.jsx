@@ -328,7 +328,7 @@ export default function BidProposalEditor() {
                         )}
                         {lastSaved && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1 flex-shrink-0 ml-2">
-                                <IconCheck className="size-3 text-green-500" />
+                                <IconCheck className="size-3 text-orange-500" />
                                 Saved {lastSaved.toLocaleTimeString()}
                             </span>
                         )}
@@ -471,7 +471,7 @@ export default function BidProposalEditor() {
                                 {attachedDocuments.map((doc, idx) => (
                                     <div key={idx} className="flex items-center justify-between bg-card border rounded-md p-2 text-sm group">
                                         <div className="flex items-center gap-2 overflow-hidden">
-                                            <IconFile className="size-4 text-blue-500 shrink-0" />
+                                            <IconFile className="size-4 text-orange-500 shrink-0" />
                                             <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate hover:underline" title={doc.name}>
                                                 {doc.name}
                                             </a>
@@ -582,7 +582,7 @@ export default function BidProposalEditor() {
                                         <ul style={{ paddingLeft: '24px' }}>
                                             {attachedDocuments.map((doc, idx) => (
                                                 <li key={idx} style={{ marginBottom: '8px' }}>
-                                                    <a href={doc.url} style={{ color: '#2563eb', textDecoration: 'underline' }}>{doc.name}</a>
+                                                    <a href={doc.url} style={{ color: '#f97316', textDecoration: 'underline' }}>{doc.name}</a>
                                                 </li>
                                             ))}
                                         </ul>

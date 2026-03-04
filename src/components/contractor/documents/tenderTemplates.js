@@ -4,9 +4,9 @@
  */
 
 export const TEMPLATE_TYPES = {
-    STANDARD: 'standard',
-    EOI: 'eoi',
-    RFQ: 'rfq',
+  STANDARD: 'standard',
+  EOI: 'eoi',
+  RFQ: 'rfq',
 }
 
 /**
@@ -14,12 +14,12 @@ export const TEMPLATE_TYPES = {
  * `defaultContent` is pre-populated HTML for the Quill editor.
  */
 export const SECTION_DEFINITIONS = {
-    cover_page: {
-        id: 'cover_page',
-        title: 'Cover Page',
-        icon: '📄',
-        order: 1,
-        defaultContent: `
+  cover_page: {
+    id: 'cover_page',
+    title: 'Cover Page',
+    icon: '📄',
+    order: 1,
+    defaultContent: `
       <h1 style="text-align: center;"><strong>TENDER DOCUMENT</strong></h1>
       <p style="text-align: center;"><br></p>
       <h2 style="text-align: center;">TENDER NO: [ENTER TENDER NUMBER]</h2>
@@ -37,14 +37,14 @@ export const SECTION_DEFINITIONS = {
       <p style="text-align: center;"><br></p>
       <p style="text-align: center;"><em>Late submissions will not be accepted.</em></p>
     `,
-    },
+  },
 
-    scope_of_work: {
-        id: 'scope_of_work',
-        title: 'Scope of Work / Requirements',
-        icon: '📋',
-        order: 2,
-        defaultContent: `
+  scope_of_work: {
+    id: 'scope_of_work',
+    title: 'Scope of Work / Requirements',
+    icon: '📋',
+    order: 2,
+    defaultContent: `
       <h2><u>PART E3: INDICATIVE SCOPE OF WORK</u></h2>
       <p><strong>THE FOLLOWING FORMS PART OF THE TECHNICAL SPECIFICATION</strong></p>
       <p><br></p>
@@ -80,14 +80,14 @@ export const SECTION_DEFINITIONS = {
         <li>[Deliverable 3]</li>
       </ul>
     `,
-    },
+  },
 
-    labour_standards: {
-        id: 'labour_standards',
-        title: 'Labour Standards',
-        icon: '👷',
-        order: 3,
-        defaultContent: `
+  labour_standards: {
+    id: 'labour_standards',
+    title: 'Labour Standards',
+    icon: '👷',
+    order: 3,
+    defaultContent: `
       <h3>1.2. LABOUR STANDARDS</h3>
       <p><br></p>
       <p>As this contract requires a labour component, the Contractor/Service Provider must pay the gazetted minimum labour rate as prescribed by the Department of Employment and Labour for the duration of the contract.</p>
@@ -109,14 +109,14 @@ export const SECTION_DEFINITIONS = {
       <h4>Working Hours:</h4>
       <p>[Specify working hours, e.g. Monday to Friday, 07:30 – 16:30]</p>
     `,
-    },
+  },
 
-    project_specifications: {
-        id: 'project_specifications',
-        title: 'Project Specifications',
-        icon: '🔧',
-        order: 4,
-        defaultContent: `
+  project_specifications: {
+    id: 'project_specifications',
+    title: 'Project Specifications',
+    icon: '🔧',
+    order: 4,
+    defaultContent: `
       <h3>1.3. PROJECT SPECIFICATIONS</h3>
       <p><br></p>
       <p>Technical specifications vary as per each end-user's requirement. Therefore, final technical specifications/requirements will be detailed in the service level agreement which will be signed by the Contractor and the respective line Department.</p>
@@ -158,14 +158,14 @@ export const SECTION_DEFINITIONS = {
         <li>[Quality requirement 3]</li>
       </ul>
     `,
-    },
+  },
 
-    technical_requirements: {
-        id: 'technical_requirements',
-        title: 'Technical Requirements from Line Departments',
-        icon: '🏗️',
-        order: 5,
-        defaultContent: `
+  technical_requirements: {
+    id: 'technical_requirements',
+    title: 'Technical Requirements from Line Departments',
+    icon: '🏗️',
+    order: 5,
+    defaultContent: `
       <h3><u>SUMMARY OF TECHNICAL REQUIREMENTS FROM VARIOUS LINE DEPARTMENTS</u></h3>
       <p><br></p>
 
@@ -196,14 +196,14 @@ export const SECTION_DEFINITIONS = {
 
       <p><em>Note: Add additional department sections as required by repeating the structure above.</em></p>
     `,
-    },
+  },
 
-    returnable_documents: {
-        id: 'returnable_documents',
-        title: 'List of Returnable Documents',
-        icon: '📑',
-        order: 6,
-        defaultContent: `
+  returnable_documents: {
+    id: 'returnable_documents',
+    title: 'List of Returnable Documents',
+    icon: '📑',
+    order: 6,
+    defaultContent: `
       <h2><u>E2.1: LIST OF RETURNABLE DOCUMENTS</u></h2>
       <p><br></p>
 
@@ -233,14 +233,14 @@ export const SECTION_DEFINITIONS = {
         <li>MBD 9: Certificate of Independent Bid Determination</li>
       </ul>
     `,
-    },
+  },
 
-    evaluation_criteria: {
-        id: 'evaluation_criteria',
-        title: 'Evaluation Criteria',
-        icon: '✅',
-        order: 7,
-        defaultContent: `
+  evaluation_criteria: {
+    id: 'evaluation_criteria',
+    title: 'Evaluation Criteria',
+    icon: '✅',
+    order: 7,
+    defaultContent: `
       <h3>EVALUATION CRITERIA</h3>
       <p><br></p>
       <p>Tenders will be evaluated in accordance with the Preferential Procurement Policy Framework Act (PPPFA) and its associated regulations.</p>
@@ -291,14 +291,14 @@ export const SECTION_DEFINITIONS = {
       <h4>Stage 3: Price and Preference Points (80/20 or 90/10)</h4>
       <p>[Specify which system applies based on tender value]</p>
     `,
-    },
+  },
 
-    pricing_schedule: {
-        id: 'pricing_schedule',
-        title: 'Pricing / Bill of Quantities',
-        icon: '💰',
-        order: 8,
-        defaultContent: `
+  pricing_schedule: {
+    id: 'pricing_schedule',
+    title: 'Pricing / Bill of Quantities',
+    icon: '💰',
+    order: 8,
+    defaultContent: `
       <h3>PRICING SCHEDULE / BILL OF QUANTITIES</h3>
       <p><br></p>
       <p>The bidder must complete the pricing schedule below. All prices must be inclusive of VAT unless otherwise stated. Prices must be firm for the duration of the contract.</p>
@@ -350,14 +350,14 @@ export const SECTION_DEFINITIONS = {
       <p><br></p>
       <p><em>Note: The employer reserves the right to increase or decrease quantities as required.</em></p>
     `,
-    },
+  },
 
-    terms_and_conditions: {
-        id: 'terms_and_conditions',
-        title: 'Terms & Conditions',
-        icon: '⚖️',
-        order: 9,
-        defaultContent: `
+  terms_and_conditions: {
+    id: 'terms_and_conditions',
+    title: 'Terms & Conditions',
+    icon: '⚖️',
+    order: 9,
+    defaultContent: `
       <h3>TERMS AND CONDITIONS</h3>
       <p><br></p>
 
@@ -389,14 +389,14 @@ export const SECTION_DEFINITIONS = {
       <h4>6. Dispute Resolution</h4>
       <p>Any disputes arising from this contract shall first be resolved through mediation. Failing which, the matter shall be referred to arbitration in accordance with the Arbitration Act.</p>
     `,
-    },
+  },
 
-    declarations: {
-        id: 'declarations',
-        title: 'Declarations & Forms',
-        icon: '✍️',
-        order: 10,
-        defaultContent: `
+  declarations: {
+    id: 'declarations',
+    title: 'Declarations & Forms',
+    icon: '✍️',
+    order: 10,
+    defaultContent: `
       <h3>DECLARATION FORMS</h3>
       <p><br></p>
 
@@ -422,82 +422,82 @@ export const SECTION_DEFINITIONS = {
       <p><strong>Position:</strong> ________________________</p>
       <p><strong>Date:</strong> ________________________</p>
     `,
-    },
+  },
 }
 
 /**
  * Template presets — each template includes a subset of sections
  */
 export const TEMPLATES = [
-    {
-        id: 'standard',
-        name: 'Standard Tender Document',
-        description: 'Complete tender document with all sections — scope, specifications, technical requirements, returnable documents, evaluation criteria, pricing, terms, and declarations.',
-        icon: '📝',
-        color: '#6366f1',
-        sections: [
-            'cover_page',
-            'scope_of_work',
-            'labour_standards',
-            'project_specifications',
-            'technical_requirements',
-            'returnable_documents',
-            'evaluation_criteria',
-            'pricing_schedule',
-            'terms_and_conditions',
-            'declarations',
-        ],
-    },
-    {
-        id: 'eoi',
-        name: 'Expression of Interest (EOI)',
-        description: 'Simplified document for inviting expressions of interest — focuses on scope, requirements, and evaluation criteria only.',
-        icon: '📩',
-        color: '#0ea5e9',
-        sections: [
-            'cover_page',
-            'scope_of_work',
-            'labour_standards',
-            'project_specifications',
-            'evaluation_criteria',
-            'declarations',
-        ],
-    },
-    {
-        id: 'rfq',
-        name: 'Request for Quotation (RFQ)',
-        description: 'Brief request for pricing on specific goods or services — includes specifications and a pricing schedule.',
-        icon: '💼',
-        color: '#10b981',
-        sections: [
-            'cover_page',
-            'scope_of_work',
-            'project_specifications',
-            'pricing_schedule',
-            'terms_and_conditions',
-            'declarations',
-        ],
-    },
+  {
+    id: 'standard',
+    name: 'Standard Tender Document',
+    description: 'Complete tender document with all sections — scope, specifications, technical requirements, returnable documents, evaluation criteria, pricing, terms, and declarations.',
+    icon: '📝',
+    color: '#f97316',
+    sections: [
+      'cover_page',
+      'scope_of_work',
+      'labour_standards',
+      'project_specifications',
+      'technical_requirements',
+      'returnable_documents',
+      'evaluation_criteria',
+      'pricing_schedule',
+      'terms_and_conditions',
+      'declarations',
+    ],
+  },
+  {
+    id: 'eoi',
+    name: 'Expression of Interest (EOI)',
+    description: 'Simplified document for inviting expressions of interest — focuses on scope, requirements, and evaluation criteria only.',
+    icon: '📩',
+    color: '#f59e0b',
+    sections: [
+      'cover_page',
+      'scope_of_work',
+      'labour_standards',
+      'project_specifications',
+      'evaluation_criteria',
+      'declarations',
+    ],
+  },
+  {
+    id: 'rfq',
+    name: 'Request for Quotation (RFQ)',
+    description: 'Brief request for pricing on specific goods or services — includes specifications and a pricing schedule.',
+    icon: '💼',
+    color: '#ea580c',
+    sections: [
+      'cover_page',
+      'scope_of_work',
+      'project_specifications',
+      'pricing_schedule',
+      'terms_and_conditions',
+      'declarations',
+    ],
+  },
 ]
 
 /**
  * Build initial sections content from a template
  */
 export function buildSectionsFromTemplate(templateId) {
-    const template = TEMPLATES.find((t) => t.id === templateId)
-    if (!template) return {}
+  const template = TEMPLATES.find((t) => t.id === templateId)
+  if (!template) return {}
 
-    const sections = {}
-    template.sections.forEach((sectionId) => {
-        const def = SECTION_DEFINITIONS[sectionId]
-        if (def) {
-            sections[sectionId] = {
-                id: sectionId,
-                title: def.title,
-                content: def.defaultContent,
-                order: def.order,
-            }
-        }
-    })
-    return sections
+  const sections = {}
+  template.sections.forEach((sectionId) => {
+    const def = SECTION_DEFINITIONS[sectionId]
+    if (def) {
+      sections[sectionId] = {
+        id: sectionId,
+        title: def.title,
+        content: def.defaultContent,
+        order: def.order,
+      }
+    }
+  })
+  return sections
 }

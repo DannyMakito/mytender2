@@ -155,9 +155,9 @@ export default function ContractProgress({ contractId }) {
   const progressPercentage = totalSignatories > 0 ? (signedCount / totalSignatories) * 100 : 0
   const statusColor =
     contract.status === "executed"
-      ? "text-green-600"
+      ? "text-orange-600"
       : contract.status === "sent"
-        ? "text-blue-600"
+        ? "text-orange-500"
         : contract.status === "draft"
           ? "text-gray-600"
           : "text-red-600"
@@ -213,17 +213,17 @@ export default function ContractProgress({ contractId }) {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
               <div className="text-sm text-muted-foreground">Signed</div>
-              <div className="text-2xl font-bold text-green-600">{signedCount}</div>
+              <div className="text-2xl font-bold text-orange-600">{signedCount}</div>
             </div>
             <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
               <div className="text-sm text-muted-foreground">Pending</div>
               <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
               <div className="text-sm text-muted-foreground">Viewed</div>
-              <div className="text-2xl font-bold text-blue-600">{viewedCount}</div>
+              <div className="text-2xl font-bold text-orange-500">{viewedCount}</div>
             </div>
             <div className="p-3 bg-red-50 rounded-lg border border-red-200">
               <div className="text-sm text-muted-foreground">Declined</div>
@@ -257,7 +257,7 @@ export default function ContractProgress({ contractId }) {
                   const isClient = sig.signatory_type === "client"
                   const statusBadge =
                     sig.signing_status === "signed" ? (
-                      <Badge className="bg-green-100 text-green-800 flex items-center gap-1 w-fit">
+                      <Badge className="bg-orange-100 text-orange-800 flex items-center gap-1 w-fit">
                         <IconCheck className="size-3" />
                         Signed
                       </Badge>
@@ -267,7 +267,7 @@ export default function ContractProgress({ contractId }) {
                         Pending
                       </Badge>
                     ) : sig.signing_status === "viewed" ? (
-                      <Badge className="bg-blue-100 text-blue-800 flex items-center gap-1 w-fit">
+                      <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 w-fit">
                         <IconEye className="size-3" />
                         Viewed
                       </Badge>
@@ -354,15 +354,15 @@ export default function ContractProgress({ contractId }) {
 
       {/* Download Final Document (Once Executed) */}
       {contract.status === "executed" && (
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
-            <CardTitle className="text-green-900">Contract Fully Executed</CardTitle>
-            <CardDescription className="text-green-800">
+            <CardTitle className="text-orange-900">Contract Fully Executed</CardTitle>
+            <CardDescription className="text-orange-800">
               All signatories have signed. You can now download the final signed contract.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="bg-green-600 hover:bg-green-700">
+            <Button className="bg-orange-600 hover:bg-orange-700">
               <IconDownload className="size-4 mr-2" />
               Download Final Signed Contract
             </Button>

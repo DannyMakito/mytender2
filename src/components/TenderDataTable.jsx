@@ -115,7 +115,7 @@ const createColumns = (navigate) => [
     cell: ({ row }) => {
       const status = row.original.status || 'open'
       const statusColors = {
-        'open': 'bg-green-50 text-green-700 border-green-100',
+        'open': 'bg-orange-50 text-orange-700 border-orange-100',
         'closed': 'bg-red-50 text-red-700 border-red-100',
         'draft': 'bg-yellow-50 text-yellow-700 border-yellow-100',
       }
@@ -408,7 +408,7 @@ export function TenderDataTable() {
               paged.map((rowData) => {
                 const status = rowData.status || 'open'
                 const statusColors = {
-                  'open': 'bg-green-50 text-green-700 border-green-100',
+                  'open': 'bg-orange-50 text-orange-700 border-orange-100',
                   'closed': 'bg-red-50 text-red-700 border-red-100',
                   'draft': 'bg-yellow-50 text-yellow-700 border-yellow-100',
                 }

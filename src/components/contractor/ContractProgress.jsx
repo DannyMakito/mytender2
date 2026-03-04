@@ -95,11 +95,11 @@ export default function ContractProgress({ contractId, tenderId }) {
   function getStatusBadge(status) {
     switch (status) {
       case 'signed':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100"><IconCheck className="size-3 mr-1" /> Signed</Badge>
+        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100"><IconCheck className="size-3 mr-1" /> Signed</Badge>
       case 'declined':
         return <Badge className="bg-red-100 text-red-800 hover:bg-red-100"><IconX className="size-3 mr-1" /> Declined</Badge>
       case 'viewed':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Viewed</Badge>
+        return <Badge className="bg-orange-50 text-orange-700 hover:bg-orange-50">Viewed</Badge>
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100"><IconClock className="size-3 mr-1" /> Pending</Badge>
       default:
@@ -143,10 +143,10 @@ export default function ContractProgress({ contractId, tenderId }) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-green-600">Signed</CardTitle>
+            <CardTitle className="text-sm font-medium text-orange-600">Signed</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.signed}</div>
+            <div className="text-2xl font-bold text-orange-600">{stats.signed}</div>
           </CardContent>
         </Card>
 
@@ -184,8 +184,8 @@ export default function ContractProgress({ contractId, tenderId }) {
           </div>
 
           {contract?.status === 'executed' && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-800">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <p className="text-sm text-orange-800">
                 <strong>✓ Contract Executed</strong> - All signatures received on {formatDate(contract.fully_executed_at)}
               </p>
             </div>

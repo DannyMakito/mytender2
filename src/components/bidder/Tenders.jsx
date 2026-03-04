@@ -34,7 +34,7 @@ export default function Tenders() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const [view, setView] = useState("table") // "table" | "card"
+  const [view, setView] = useState("card") // "table" | "card"
   const [query, setQuery] = useState("")
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
@@ -159,7 +159,7 @@ export default function Tenders() {
             <TabsTrigger value="all">All Tenders</TabsTrigger>
             <TabsTrigger value="recommended" disabled={userInterests.length === 0}>
               Recommended for You
-              {userInterests.length > 0 && <span className="ml-2 bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Match</span>}
+              {userInterests.length > 0 && <span className="ml-2 bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded-full">Match</span>}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -218,7 +218,7 @@ export default function Tenders() {
                     <TableCell className="font-medium">{t.title}</TableCell>
                     <TableCell>
                       {t.category ? (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700">
                           {t.category}
                         </span>
                       ) : (
@@ -231,14 +231,25 @@ export default function Tenders() {
                         <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{t.description}</div>
                       )}
                     </TableCell>
-                    <TableCell className="flex items-center gap-2"><IconMapPin className="size-4 text-muted-foreground" />{t.province || '—'}</TableCell>
-                    <TableCell className="text-green-600 font-medium capitalize">{t.status || 'open'}</TableCell>
-                    <TableCell className="flex items-center gap-2"><IconCalendar className="size-4 text-muted-foreground" />{t.closing_date || '—'}</TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      {t.document_url && (
-                        <Button variant="ghost" size="sm" onClick={() => window.open(t.document_url, '_blank')}>Document</Button>
-                      )}
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/tenders/${t.id}`)}>View</Button>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <IconMapPin className="size-4 text-muted-foreground" />
+                        {t.province || '—'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-orange-600 font-medium capitalize">{t.status || 'open'}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <IconCalendar className="size-4 text-muted-foreground" />
+                        {t.closing_date || '—'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="default" size="sm" onClick={() => navigate(`/tenders/${t.id}`)}>View</Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

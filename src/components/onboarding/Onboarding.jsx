@@ -29,12 +29,12 @@ const PROVINCES = [
 ]
 
 const CATEGORIES = [
-    'Construction', 'Transportation', 'Professional Services',
-    'Others', 'Supplier', 'Catering'
+    'Housing Development', 'Office Spaces', 'Professional Services',
+    'General Supplier', 'Catering', 'Others'
 ]
 
 const INDUSTRIES = [
-    'Housing development', 'office spaces', 'resturants ', 'student accommodation', 'retail', 'beauty salon', 'plumbing', 'Other Service Activities'
+    'Housing Development', 'Office Spaces', 'Restaurants', 'Student Accommodation', 'Retail', 'Beauty & Grooming', 'Plumbing & Maintenance', 'Other Service Activities'
 ]
 
 const SPECIALIZATIONS = [
@@ -182,7 +182,7 @@ const Step2Business = ({ formData, handleInputChange, role }) => {
                     value={formData.businessDescription}
                     onChange={(e) => handleInputChange('businessDescription', e.target.value)}
                     placeholder="We build digital solutions and services..."
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
             </div>
         </div>
@@ -201,7 +201,7 @@ const Step3Location = ({ formData, handleInputChange, handleCheckboxChange }) =>
                 value={formData.businessAddress}
                 onChange={(e) => handleInputChange('businessAddress', e.target.value)}
                 placeholder="Enter your business address"
-                className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2"
+                className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
             />
         </div>
         <div className="space-y-3">
@@ -283,12 +283,12 @@ const Step5Documents = ({ formData, handleDocumentUpload, uploading, role }) => 
         </div>
 
         <div className="max-w-md mx-auto space-y-6">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                 <div className="flex items-start gap-3">
-                    <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <FileText className="w-5 h-5 text-orange-600 mt-0.5" />
                     <div>
-                        <p className="font-medium text-blue-800">Required Documents</p>
-                        <ul className="text-sm text-blue-700 mt-1 space-y-1">
+                        <p className="font-medium text-orange-800">Required Documents</p>
+                        <ul className="text-sm text-orange-700 mt-1 space-y-1">
                             <li>• {role === 'supplier' ? 'CIPC Document' : 'ID'}</li>
                         </ul>
                     </div>
@@ -296,17 +296,17 @@ const Step5Documents = ({ formData, handleDocumentUpload, uploading, role }) => 
             </div>
 
             {formData.businessDocumentUrl ? (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                     <div className="flex items-center gap-3">
-                        <Check className="w-5 h-5 text-green-600" />
+                        <Check className="w-5 h-5 text-orange-600" />
                         <div>
-                            <p className="font-medium text-green-800">Document Uploaded</p>
-                            <p className="text-sm text-green-700">Your document has been uploaded successfully.</p>
+                            <p className="font-medium text-orange-800">Document Uploaded</p>
+                            <p className="text-sm text-orange-700">Your document has been uploaded successfully.</p>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-lime-300 transition-colors">
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-orange-300 transition-colors">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="font-medium text-gray-700 mb-1">Upload your {role === 'supplier' ? 'CIPC registration' : 'business'} document</p>
                     <p className="text-sm text-muted-foreground mb-4">PDF, JPG, or PNG up to 5MB</p>
@@ -320,7 +320,7 @@ const Step5Documents = ({ formData, handleDocumentUpload, uploading, role }) => 
                     <Button
                         onClick={() => document.getElementById('business-doc-upload').click()}
                         disabled={uploading}
-                        className="bg-lime-500 hover:bg-lime-600"
+                        className="bg-orange-500 hover:bg-orange-600"
                     >
                         {uploading ? (
                             <>
@@ -410,28 +410,28 @@ const Step8Subscription = ({ role }) => (
             <p className="text-gray-500">Unlock expected potential features</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className={`cursor-pointer border-2 transition-all ${role === 'pro' ? 'border-lime-500 bg-lime-50' : 'border-gray-200'}`}>
+            <Card className={`cursor-pointer border-2 transition-all ${role === 'pro' ? 'border-orange-500 bg-orange-50' : 'border-gray-200'}`}>
                 <CardHeader>
                     <CardTitle>Free Tier</CardTitle>
                     <CardDescription>Basic access to tenders</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ul className="text-sm space-y-2">
-                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-500" /> View Public Tenders</li>
-                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-500" /> Limited Bids</li>
+                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-orange-500" /> View Public Tenders</li>
+                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-orange-500" /> Limited Bids</li>
                     </ul>
                     <Button className="w-full mt-4" variant="outline">Selected</Button>
                 </CardContent>
             </Card>
-            <Card className="cursor-pointer border-2 border-gray-100 hover:border-lime-200 opacity-60">
+            <Card className="cursor-pointer border-2 border-gray-100 hover:border-orange-200 opacity-60">
                 <CardHeader>
                     <CardTitle>Pro Tier (Coming Soon)</CardTitle>
                     <CardDescription>Advanced analytics & Unlimited bids</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ul className="text-sm space-y-2">
-                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-500" /> Unlimited Bids</li>
-                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-500" /> Advanced Filtering</li>
+                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-orange-500" /> Unlimited Bids</li>
+                        <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-orange-500" /> Advanced Filtering</li>
                     </ul>
                     <Button className="w-full mt-4" disabled>Coming Soon</Button>
                 </CardContent>
@@ -467,7 +467,7 @@ const Step9Welcome = ({ finishOnboarding, loading, role }) => (
         <Button
             onClick={finishOnboarding}
             size="lg"
-            className="mt-8 bg-lime-600 hover:bg-lime-700 text-white min-w-[200px]"
+            className="mt-8 bg-orange-600 hover:bg-orange-700 text-white min-w-[200px]"
             disabled={loading}
         >
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Go to Dashboard'}
@@ -715,7 +715,7 @@ export default function Onboarding() {
 
                     {/* Active Progress Bar */}
                     <div
-                        className="absolute top-1/2 left-0 h-1 bg-lime-500 transition-all duration-300 -z-10 rounded"
+                        className="absolute top-1/2 left-0 h-1 bg-orange-500 transition-all duration-300 -z-10 rounded"
                         style={{
                             width: `${((effectiveSteps.findIndex(s => s.id === currentStep)) / (effectiveSteps.length - 1)) * 100}%`
                         }}
@@ -729,13 +729,13 @@ export default function Onboarding() {
                             <div key={step.id} className="flex flex-col items-center gap-2 bg-transparent">
                                 <div
                                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 bg-white
-                    ${isActive ? 'border-lime-500 text-lime-500 scale-110 shadow-lg' :
-                                            isCompleted ? 'border-lime-500 bg-lime-500 text-white' : 'border-gray-300 text-gray-400'}
+                    ${isActive ? 'border-orange-500 text-orange-500 scale-110 shadow-lg' :
+                                            isCompleted ? 'border-orange-500 bg-orange-500 text-white' : 'border-gray-300 text-gray-400'}
                   `}
                                 >
                                     {isCompleted ? <Check className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
                                 </div>
-                                <span className={`text-xs font-medium hidden md:block ${isActive || isCompleted ? 'text-lime-600' : 'text-gray-400'}`}>
+                                <span className={`text-xs font-medium hidden md:block ${isActive || isCompleted ? 'text-orange-600' : 'text-gray-400'}`}>
                                     {step.label}
                                 </span>
                             </div>
@@ -771,7 +771,7 @@ export default function Onboarding() {
 
             {renderStepIndicator()}
 
-            <Card className="w-full max-w-3xl mx-4 shadow-xl border-t-4 border-t-lime-500">
+            <Card className="w-full max-w-3xl mx-4 shadow-xl border-t-4 border-t-orange-500">
                 <CardContent className="p-8">
                     {renderStepContent()}
 
@@ -790,7 +790,7 @@ export default function Onboarding() {
 
                             <Button
                                 onClick={handleNext}
-                                className="bg-lime-500 hover:bg-lime-600 text-white px-8"
+                                className="bg-orange-500 hover:bg-orange-600 text-white px-8"
                             >
                                 {effectiveSteps.findIndex(s => s.id === currentStep) === effectiveSteps.length - 2 ? 'Finish' : 'Next'}
                                 <ChevronRight className="w-4 h-4 ml-2" />

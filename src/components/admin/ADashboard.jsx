@@ -138,10 +138,10 @@ const ADashboard = () => {
                                                 <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                                             </div>
                                             <div className={`text-xs font-medium px-2 py-1 rounded ${u.role === 'pro'
-                                                ? 'text-blue-600 bg-blue-50'
+                                                ? 'text-orange-600 bg-orange-50'
                                                 : u.role === 'admin'
-                                                    ? 'text-purple-600 bg-purple-50'
-                                                    : 'text-green-600 bg-green-50'
+                                                    ? 'text-amber-600 bg-amber-50'
+                                                    : 'text-orange-700 bg-orange-100'
                                                 }`}>
                                                 {(u.role || 'user').charAt(0).toUpperCase() + (u.role || 'user').slice(1)}
                                             </div>

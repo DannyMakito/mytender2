@@ -352,7 +352,7 @@ export default function ContractDraftModal({ open, onOpenChange, tender, approve
               <Button
                 onClick={handleSaveDraft}
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-orange-600 hover:bg-orange-700"
               >
                 <IconFileText className="size-4 mr-2" />
                 Save Changes (Version {currentVersion + 1})
@@ -414,11 +414,11 @@ export default function ContractDraftModal({ open, onOpenChange, tender, approve
                   </ul>
                 </div>
 
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-xs font-mono text-blue-900">
+                <div className="p-3 bg-orange-50 border border-orange-200 rounded">
+                  <p className="text-xs font-mono text-orange-900">
                     Contract Number: <strong>{contract.contract_number}</strong>
                   </p>
-                  <p className="text-xs font-mono text-blue-900">
+                  <p className="text-xs font-mono text-orange-900">
                     Tender: <strong>{tender.title}</strong>
                   </p>
                 </div>
@@ -429,7 +429,7 @@ export default function ContractDraftModal({ open, onOpenChange, tender, approve
               <Button
                 onClick={handleSendContract}
                 disabled={loading}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-orange-600 hover:bg-orange-700"
               >
                 <IconSend className="size-4 mr-2" />
                 Send Contract to Signatories

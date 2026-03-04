@@ -543,7 +543,7 @@ export default function Tender() {
                     accept=".pdf,.doc,.docx,.xlsx"
                   />
                   {selectedFile && (
-                    <p className="text-xs text-green-600 mt-1">✓ {selectedFile.name} selected</p>
+                    <p className="text-xs text-orange-600 mt-1">✓ {selectedFile.name} selected</p>
                   )}
                 </div>
 
@@ -565,7 +565,7 @@ export default function Tender() {
                     {form.collaborators.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-3">
                         {form.collaborators.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-md border border-blue-100">
+                          <span key={email} className="inline-flex items-center gap-1 bg-orange-50 text-orange-700 text-xs px-2 py-1 rounded-md border border-orange-100">
                             {email}
                             <button type="button" onClick={() => handleRemoveCollaborator(email)} className="hover:text-destructive transition-colors">
                               <IconX className="size-3" />
@@ -612,8 +612,8 @@ export default function Tender() {
                       <span className="text-xs text-muted-foreground">Company: {t.posted_by || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`rounded-full px-2 py-1 text-xs font-medium border capitalize ${t.status === 'draft' ? 'bg-orange-50 text-orange-700 border-orange-100' :
-                        t.status === 'open' ? 'bg-green-50 text-green-700 border-green-100' :
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium border capitalize ${t.status === 'draft' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                        t.status === 'open' ? 'bg-orange-100 text-orange-800 border-orange-200' :
                           'bg-gray-50 text-gray-700 border-gray-100'
                         }`}>
                         {t.status}
@@ -644,7 +644,7 @@ export default function Tender() {
                           </span>
                         )}
                         {t.required_roles.includes('Company (All Roles)') && (
-                          <span className="inline-flex items-center bg-blue-50 text-blue-700 border-blue-200 text-[10px] px-1.5 py-0.5 rounded border">
+                          <span className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
                             Companies Allowed
                           </span>
                         )}

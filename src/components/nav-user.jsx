@@ -32,7 +32,7 @@ import {
 export function NavUser({
   user
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile, setOpenMobile } = useSidebar()
   const navigate = useNavigate()
   const { signOut } = useAuth()
 
@@ -89,7 +89,10 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
+              <DropdownMenuItem onClick={() => {
+                navigate('/profile')
+                if (isMobile) setOpenMobile(false)
+              }}>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
@@ -103,7 +106,10 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onClick={() => {
+              handleLogout()
+              if (isMobile) setOpenMobile(false)
+            }}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

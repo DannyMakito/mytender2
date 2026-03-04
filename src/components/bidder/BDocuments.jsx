@@ -37,9 +37,9 @@ const STATUS_STYLES = {
   },
   complete: {
     label: 'Complete',
-    bg: 'bg-green-50 dark:bg-green-950/30',
-    text: 'text-green-700 dark:text-green-400',
-    border: 'border-green-200 dark:border-green-800',
+    bg: 'bg-orange-50 dark:bg-orange-950/30',
+    text: 'text-orange-700 dark:text-orange-400',
+    border: 'border-orange-200 dark:border-orange-800',
   },
 }
 
@@ -234,7 +234,7 @@ export default function BDocuments() {
                       {status.label}
                     </span>
                     {hasAttachments && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border bg-blue-50 text-blue-700 border-blue-200">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border bg-orange-50 text-orange-700 border-orange-200">
                         Attachments
                       </span>
                     )}

@@ -14,7 +14,7 @@ export default function ContractPage() {
   const navigate = useNavigate()
   const { tenderId } = useParams()
   const { user } = useAuth()
-  
+
   const [tender, setTender] = useState(null)
   const [approvedBids, setApprovedBids] = useState([])
   const [contractData, setContractData] = useState(null)
@@ -35,7 +35,7 @@ export default function ContractPage() {
   async function checkExistingContract() {
     try {
       setCheckingExisting(true)
-      
+
       // Check if contract already exists for this tender
       const { data: existingContract, error: checkError } = await supabase
         .from('contracts')
@@ -255,7 +255,7 @@ export default function ContractPage() {
 
       toast.success('Contract sent to all signatories!')
       console.log('Contract successfully sent, navigating back...')
-      
+
       // Navigate back to tender bids page
       navigate(`/tender/${tenderId}/bids`)
     } catch (err) {
@@ -305,8 +305,8 @@ export default function ContractPage() {
         <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => navigate(`/tender/${tenderId}/bids`)}
               >
@@ -360,7 +360,7 @@ export default function ContractPage() {
           {/* Confirm Tab */}
           <TabsContent value="confirm" className="space-y-6">
             <h2 className="text-lg font-semibold">Review & Send Contract</h2>
-            
+
             {/* Terms Editing Section */}
             <Card>
               <CardHeader>
@@ -389,12 +389,12 @@ export default function ContractPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {/* Client */}
-                <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-orange-50 border border-orange-200 rounded-lg">
                   <div>
                     <p className="font-semibold text-sm">{user?.email}</p>
                     <p className="text-xs text-muted-foreground">Client</p>
                   </div>
-                  <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Pending</Badge>
+                  <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Pending</Badge>
                 </div>
 
                 {/* Bidders */}

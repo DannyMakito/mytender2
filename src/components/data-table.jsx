@@ -178,7 +178,7 @@ const columns = [
     cell: ({ row }) => (
       <Badge variant="outline" className="text-muted-foreground px-1.5">
         {row.original.status === "Done" ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+          <IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
         ) : (
           <IconLoader />
         )}
@@ -493,8 +493,8 @@ export function DataTable({
               {table
                 .getAllColumns()
                 .filter((column) =>
-                typeof column.accessorFn !== "undefined" &&
-                column.getCanHide())
+                  typeof column.accessorFn !== "undefined" &&
+                  column.getCanHide())
                 .map((column) => {
                   return (
                     <DropdownMenuCheckboxItem
@@ -525,7 +525,7 @@ export function DataTable({
                 <SelectValue placeholder={`${pageSizeLocal}`} />
               </SelectTrigger>
               <SelectContent side="top">
-                {[5,10,20,30].map((s) => <SelectItem key={s} value={`${s}`}>{s} per page</SelectItem>)}
+                {[5, 10, 20, 30].map((s) => <SelectItem key={s} value={`${s}`}>{s} per page</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -559,7 +559,7 @@ export function DataTable({
                       <Badge variant="outline" className="text-muted-foreground">{row.category || row.type}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={row.status === 'OPEN' || row.status === 'Done' ? 'secondary' : 'default'} className={row.status === 'OPEN' ? 'text-green-600' : ''}>{row.status}</Badge>
+                      <Badge variant={row.status === 'OPEN' || row.status === 'Done' ? 'secondary' : 'default'} className={row.status === 'OPEN' ? 'text-orange-600' : ''}>{row.status}</Badge>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">{row.closingDate || row.target || ''}</TableCell>
                   </TableRow>
@@ -589,13 +589,13 @@ export function DataTable({
         </div>
 
         <div className="flex items-center justify-between px-2">
-          <div className="text-sm text-muted-foreground">Showing {(pageIndexLocal*pageSizeLocal)+1} - {Math.min((pageIndexLocal+1)*pageSizeLocal, totalRows)} of {totalRows}</div>
+          <div className="text-sm text-muted-foreground">Showing {(pageIndexLocal * pageSizeLocal) + 1} - {Math.min((pageIndexLocal + 1) * pageSizeLocal, totalRows)} of {totalRows}</div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setPageIndexLocal(0)} disabled={pageIndexLocal === 0}>First</Button>
-            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.max(0, p-1))} disabled={pageIndexLocal === 0}>Prev</Button>
-            <div className="px-2">{pageIndexLocal+1} / {totalPages}</div>
-            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.min(totalPages-1, p+1))} disabled={pageIndexLocal >= totalPages-1}>Next</Button>
-            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal(totalPages-1)} disabled={pageIndexLocal >= totalPages-1}>Last</Button>
+            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.max(0, p - 1))} disabled={pageIndexLocal === 0}>Prev</Button>
+            <div className="px-2">{pageIndexLocal + 1} / {totalPages}</div>
+            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal((p) => Math.min(totalPages - 1, p + 1))} disabled={pageIndexLocal >= totalPages - 1}>Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setPageIndexLocal(totalPages - 1)} disabled={pageIndexLocal >= totalPages - 1}>Last</Button>
           </div>
         </div>
       </TabsContent>

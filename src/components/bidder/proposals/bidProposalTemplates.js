@@ -254,7 +254,7 @@ export const BID_TEMPLATES = [
         name: 'Full Proposal',
         description: 'Comprehensive proposal including cover page, profiling, and declarations. Best for formal company bids.',
         icon: '📑',
-        color: '#8b5cf6', // purple
+        color: '#f97316', // orange
         sections: [
             'cover_page',
             'cover_letter',
@@ -272,7 +272,7 @@ export const BID_TEMPLATES = [
         name: 'Compact Proposal',
         description: 'Streamlined proposal focusing on technical and financial details. Best for freelancers or quick bids.',
         icon: '📝',
-        color: '#10b981', // emerald
+        color: '#f59e0b', // amber
         sections: [
             'cover_letter',
             'executive_summary',

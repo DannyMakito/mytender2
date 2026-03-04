@@ -10,12 +10,12 @@ import supabase from '../../../supabase-client'
 import { generateContractHTML, extractContractFormData, validateContractForm } from '../../lib/contractGenerator'
 import { useAuth } from '../../context/AuthContext'
 
-export default function ContractDraftModal({ 
-  tender, 
-  approvedBids, 
-  open, 
-  onOpenChange, 
-  onContractSent 
+export default function ContractDraftModal({
+  tender,
+  approvedBids,
+  open,
+  onOpenChange,
+  onContractSent
 }) {
   const { user } = useAuth()
   const [contractData, setContractData] = useState(null)
@@ -263,7 +263,7 @@ export default function ContractDraftModal({
                   <div>
                     <h4 className="font-medium mb-3">Signatories List</h4>
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
                         <div>
                           <p className="font-medium text-sm">{user?.email}</p>
                           <p className="text-xs text-muted-foreground">Client</p>

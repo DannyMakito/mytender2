@@ -131,7 +131,7 @@ export default function BidderContractSign() {
       }
 
       toast.success('Contract signed successfully!')
-      
+
       // Navigate back to contracts list
       setTimeout(() => navigate('/bcontracts'), 1500)
     } catch (err) {
@@ -176,7 +176,7 @@ export default function BidderContractSign() {
             Back
           </Button>
           <h1 className="text-3xl font-bold">{contract.contract_number}</h1>
-          <Badge className={signatory.signing_status === 'signed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+          <Badge className={signatory.signing_status === 'signed' ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'}>
             {signatory.signing_status}
           </Badge>
         </div>
@@ -209,12 +209,12 @@ export default function BidderContractSign() {
             <CardContent className="space-y-4">
               {signatory.signing_status === 'signed' ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">
+                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                    <p className="text-sm text-orange-800">
                       <strong>✓ Already Signed</strong>
                     </p>
                     {signatory.signed_at && (
-                      <p className="text-xs text-green-700 mt-2">
+                      <p className="text-xs text-orange-700 mt-2">
                         Signed on {new Date(signatory.signed_at).toLocaleDateString('en-ZA')}
                       </p>
                     )}
@@ -259,7 +259,7 @@ export default function BidderContractSign() {
                     />
                   </div>
 
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
                     <label className="flex items-start gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -267,7 +267,7 @@ export default function BidderContractSign() {
                         onChange={(e) => setFormData({ ...formData, authorized: e.target.checked })}
                         className="mt-1 w-4 h-4"
                       />
-                      <span className="text-xs text-blue-900">
+                      <span className="text-xs text-orange-900">
                         I confirm that I am authorized to sign this contract on behalf of the company
                       </span>
                     </label>

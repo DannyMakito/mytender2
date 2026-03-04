@@ -272,7 +272,7 @@ export default function TenderDetails() {
   }
 
   const days = tender.closing_date ? daysUntil(tender.closing_date) : null
-  const statusColor = tender.status === 'open' ? 'bg-green-50 text-green-700 border-green-100' :
+  const statusColor = tender.status === 'open' ? 'bg-orange-50 text-orange-700 border-orange-100' :
     tender.status === 'closed' ? 'bg-red-50 text-red-700 border-red-100' :
       'bg-gray-50 text-gray-700 border-gray-100'
 
@@ -434,8 +434,8 @@ export default function TenderDetails() {
               {role === 'supplier' && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Bidding as</label>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-sm font-medium text-blue-900">Supplier</p>
+                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                    <p className="text-sm font-medium text-orange-900">Supplier</p>
                   </div>
                 </div>
               )}
@@ -460,9 +460,9 @@ export default function TenderDetails() {
 
               {/* File Upload Section */}
               <div className="space-y-2">
-                <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm text-blue-800 font-medium mb-1">Important Note:</p>
-                  <p className="text-xs text-blue-700">
+                <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-md">
+                  <p className="text-sm text-orange-800 font-medium mb-1">Important Note:</p>
+                  <p className="text-xs text-orange-700">
                     Please ensure you have submitted all supporting documents and your bid documents in one file before uploading.
                   </p>
                 </div>

@@ -264,7 +264,7 @@ export default function TeamsPage() {
         // So always show 2 checks, color depends on read.
 
         return (
-            <div className={`flex items-center ml-1 ${isRead ? 'text-blue-500' : 'text-gray-400'}`}>
+            <div className={`flex items-center ml-1 ${isRead ? 'text-orange-500' : 'text-gray-400'}`}>
                 <IconChecks className="size-4" />
             </div>
         )
@@ -322,7 +322,7 @@ export default function TeamsPage() {
 
                                 {/* Unread Badge */}
                                 {unreadCounts[project.id] > 0 && (
-                                    <div className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.2rem] text-center">
+                                    <div className="ml-auto bg-orange-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.2rem] text-center">
                                         {unreadCounts[project.id]}
                                     </div>
                                 )}

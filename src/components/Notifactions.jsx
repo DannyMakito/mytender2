@@ -22,11 +22,11 @@ import {
 import supabase from '../../supabase-client.js'
 
 const NOTIFICATION_TYPES = {
-  NEW_TENDER: { label: 'New Tender', icon: IconFileDescription, color: 'bg-blue-100 text-blue-800' },
-  AWARDED_TENDER: { label: 'Awards & Approvals', icon: IconTrophy, color: 'bg-green-100 text-green-800' },
+  NEW_TENDER: { label: 'New Tender', icon: IconFileDescription, color: 'bg-orange-100 text-orange-800' },
+  AWARDED_TENDER: { label: 'Awards & Approvals', icon: IconTrophy, color: 'bg-amber-100 text-amber-800' },
   REJECTED_BID: { label: 'Rejections', icon: IconX, color: 'bg-red-100 text-red-800' },
-  PROJECT_TASK: { label: 'Project Task', icon: IconClipboard, color: 'bg-purple-100 text-purple-800' },
-  NEW_BID: { label: 'New Bid', icon: IconGift, color: 'bg-orange-100 text-orange-800' },
+  PROJECT_TASK: { label: 'Project Task', icon: IconClipboard, color: 'bg-orange-200 text-orange-900' },
+  NEW_BID: { label: 'New Bid', icon: IconGift, color: 'bg-amber-100 text-amber-800' },
 }
 
 export default function NotificationsPage() {
@@ -102,7 +102,7 @@ export default function NotificationsPage() {
                 {items.map(n => (
                   <Card
                     key={n.id}
-                    className={`transition-colors cursor-pointer hover:bg-gray-50 ${!n.is_read ? 'border-l-4 border-l-primary bg-blue-50/30' : 'opacity-80'}`}
+                    className={`transition-colors cursor-pointer hover:bg-gray-50 ${!n.is_read ? 'border-l-4 border-l-primary bg-orange-50/30' : 'opacity-80'}`}
                     onClick={() => {
                       if (!n.is_read) {
                         markAsRead(n.id)
@@ -128,7 +128,7 @@ export default function NotificationsPage() {
                           {/* ⏱️ “5 minutes ago” */}
                           <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
                             <span>{formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}</span>
-                            {!n.is_read && <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />}
+                            {!n.is_read && <span className="inline-block w-2 h-2 rounded-full bg-orange-500" />}
                           </div>
                         </div>
                       </div>

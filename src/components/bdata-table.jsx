@@ -160,8 +160,8 @@ const createColumns = (onWithdraw) => [
     cell: ({ row }) => {
       const status = row.original.status || 'submitted'
       const statusColors = {
-        'submitted': 'bg-blue-50 text-blue-700 border-blue-100',
-        'approved': 'bg-green-50 text-green-700 border-green-100',
+        'submitted': 'bg-orange-50 text-orange-700 border-orange-100',
+        'approved': 'bg-orange-100 text-orange-800 border-orange-200',
         'rejected': 'bg-red-50 text-red-700 border-red-100',
       }
       return (
@@ -525,8 +525,8 @@ export function BidderDataTable() {
               paged.map((rowData) => {
                 const status = rowData.status || 'submitted'
                 const statusColors = {
-                  'submitted': 'bg-blue-50 text-blue-700 border-blue-100',
-                  'approved': 'bg-green-50 text-green-700 border-green-100',
+                  'submitted': 'bg-orange-50 text-orange-700 border-orange-100',
+                  'approved': 'bg-orange-100 text-orange-800 border-orange-200',
                   'rejected': 'bg-red-50 text-red-700 border-red-100',
                 }
                 return (

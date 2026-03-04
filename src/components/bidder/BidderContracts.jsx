@@ -85,11 +85,11 @@ export default function BidderContracts() {
   function getStatusBadge(status) {
     switch (status) {
       case 'signed':
-        return <Badge className="bg-green-100 text-green-800">Signed</Badge>
+        return <Badge className="bg-orange-100 text-orange-800">Signed</Badge>
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800">Pending Signature</Badge>
       case 'viewed':
-        return <Badge className="bg-blue-100 text-blue-800">Viewed</Badge>
+        return <Badge className="bg-orange-50 text-orange-700">Viewed</Badge>
       case 'declined':
         return <Badge className="bg-red-100 text-red-800">Declined</Badge>
       default:
@@ -163,7 +163,7 @@ export default function BidderContracts() {
                 {contract.signing_status === 'signed' && (
                   <Button
                     variant="ghost"
-                    className="flex-1 text-green-600"
+                    className="flex-1 text-orange-600"
                     disabled
                   >
                     <IconCheck className="size-4 mr-2" />

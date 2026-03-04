@@ -31,77 +31,111 @@ export default function SideCard({ projects = [], selectedProjectId, setSelected
   }, [stats])
 
   return (
-    <div className="px-4">
-      <Card className="p-4 rounded-lg border">
-        <CardHeader>
-          <div className="flex items-center justify-between">
+    <div className="w-full">
+      <Card className="rounded-xl border shadow-sm overflow-hidden bg-card/50 backdrop-blur-sm">
+        <CardHeader className="border-b bg-muted/20 pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-sm">PROJECT</CardTitle>
-              {/* render icon for selected project */}
-              <div className="text-muted-foreground">
+              <div className="p-1.5 bg-primary/10 rounded-md text-primary">
                 {(() => {
                   const iconKey = project.icon || 'FiFolder'
                   const map = { FiFolder, FiBriefcase, FiCamera, FiCheckSquare, FiStar, FiFlag, FiDatabase, FiTarget }
                   const Icon = map[iconKey] || FiFolder
-                  return <Icon size={16} />
+                  return <Icon size={14} />
                 })()}
               </div>
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Project Stats</CardTitle>
             </div>
-            <div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="rounded-md border px-2 py-1 text-sm flex items-center gap-2">
-                    <span className="text-sm">{project.name}</span>
-                    <span className="ml-2 inline-flex items-center justify-center rounded-full bg-green-600 w-6 h-6 text-white text-xs">{project.tasks?.length || 0}</span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuContent className="w-64 p-2">
-                    <div className="p-2">
-                      <input type="search" placeholder="Search a project..." className="w-full rounded-md border px-3 py-2 text-sm" onChange={() => { }} />
-                    </div>
-                    <div className="divide-y">
-                      {projects.map((p) => {
-                        const Icon = { FiFolder, FiBriefcase, FiCamera, FiCheckSquare, FiStar, FiFlag, FiDatabase, FiTarget }[p.icon] || FiFolder
-                        return (
-                          <DropdownMenuItem key={p.id} onClick={() => setSelectedProjectId?.(p.id)} className="flex items-center gap-3 px-3 py-2">
-                            <div className="inline-flex items-center justify-center rounded-md bg-muted w-9 h-9">
-                              <Icon />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="inline-flex items-center gap-2 px-3 py-1.5 bg-background border rounded-lg text-sm font-medium hover:bg-muted/50 transition-colors shadow-sm">
+                  <span className="truncate max-w-[120px]">{project.name}</span>
+                  <span className="flex items-center justify-center rounded-full bg-primary text-primary-foreground min-w-[20px] h-5 px-1 text-[10px] font-bold">
+                    {project.tasks?.length || 0}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuContent className="w-64 p-2 shadow-xl border-2">
+                  <div className="p-2">
+                    <input type="search" placeholder="Quick find project..." className="w-full rounded-md border-muted px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" onChange={() => { }} />
+                  </div>
+                  <div className="max-h-[300px] overflow-y-auto divide-y divide-muted/50">
+                    {projects.map((p) => {
+                      const Icon = { FiFolder, FiBriefcase, FiCamera, FiCheckSquare, FiStar, FiFlag, FiDatabase, FiTarget }[p.icon] || FiFolder
+                      return (
+                        <DropdownMenuItem key={p.id} onClick={() => setSelectedProjectId?.(p.id)} className="flex items-center gap-3 px-3 py-3 cursor-pointer focus:bg-primary/5">
+                          <div className="flex items-center justify-center rounded-lg bg-muted size-9 text-muted-foreground">
+                            <Icon size={18} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-sm truncate">{p.name}</div>
+                            <div className="text-[11px] text-muted-foreground">{p.tasks?.length || 0} Total Tasks</div>
+                          </div>
+                          {selectedProjectId === p.id && (
+                            <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center">
+                              <CheckIcon className="size-3 text-primary" />
                             </div>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{p.name}</div>
-                              <div className="text-xs text-muted-foreground">{p.tasks?.length || 0} Tasks</div>
-                            </div>
-                            {selectedProjectId === p.id ? <CheckIcon className="size-4 text-green-600" /> : null}
-                          </DropdownMenuItem>
-                        )
-                      })}
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenuPortal>
-              </DropdownMenu>
-            </div>
+                          )}
+                        </DropdownMenuItem>
+                      )
+                    })}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
+            </DropdownMenu>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center gap-4 py-4">
-            <div style={{ width: 120, height: 120 }}>
-              <CircularProgressbar value={percent} text={`${percent}%`} styles={buildStyles({ textSize: '18px', pathColor: '#10B981', textColor: '#10B981', trailColor: '#E6EAEA' })} />
+
+        <CardContent className="pt-8">
+          <div className="flex flex-col items-center gap-8">
+            <div className="relative" style={{ width: 140, height: 140 }}>
+              <CircularProgressbar
+                value={percent}
+                text={`${percent}%`}
+                styles={buildStyles({
+                  textSize: '20px',
+                  pathColor: '#f97316',
+                  textColor: '#f97316',
+                  trailColor: '#f1f5f9',
+                  strokeLinecap: 'round'
+                })}
+              />
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-background px-3 py-1 rounded-full border shadow-sm text-[10px] font-bold uppercase text-muted-foreground whitespace-nowrap">
+                Overall Progress
+              </div>
             </div>
-            <div className="w-full">
+
+            <div className="w-full space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-muted/50 rounded-md p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">TOTAL</div>
-                  <div className="font-semibold">{stats.total}</div>
-                </div>
-                <div className="bg-muted/50 rounded-md p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">IN PROGRESS</div>
-                  <div className="font-semibold">{stats.inProgress}</div>
+                <div className="bg-muted/30 hover:bg-muted/50 transition-colors rounded-xl p-4 border border-transparent hover:border-muted-foreground/10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FiDatabase className="size-3 text-orange-500" />
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-tight">Total</span>
+                  </div>
+                  <div className="text-xl font-bold">{stats.total}</div>
                 </div>
 
-                <div className="bg-muted/50 rounded-md p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">COMPLETED</div>
-                  <div className="font-semibold">{stats.completed}</div>
+                <div className="bg-muted/30 hover:bg-muted/50 transition-colors rounded-xl p-4 border border-transparent hover:border-muted-foreground/10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FiTarget className="size-3 text-orange-400" />
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-tight">Active</span>
+                  </div>
+                  <div className="text-xl font-bold text-orange-500">{stats.inProgress}</div>
+                </div>
+
+                <div className="bg-muted/30 hover:bg-muted/50 transition-colors rounded-xl p-4 border border-transparent hover:border-muted-foreground/10 col-span-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FiCheckSquare className="size-3 text-orange-600" />
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-tight">Completed</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xl font-bold text-orange-700">{stats.completed}</div>
+                    <div className="text-[10px] font-semibold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                      {stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

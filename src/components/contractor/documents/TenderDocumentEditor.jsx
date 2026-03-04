@@ -250,7 +250,7 @@ export default function TenderDocumentEditor() {
                         />
                         {lastSaved && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1 flex-shrink-0">
-                                <IconCheck className="size-3 text-green-500" />
+                                <IconCheck className="size-3 text-orange-500" />
                                 Saved {lastSaved.toLocaleTimeString()}
                             </span>
                         )}

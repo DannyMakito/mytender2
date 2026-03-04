@@ -11,6 +11,7 @@ const Projects = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [activeTab, setActiveTab] = useState('board')
 
   // Fetch projects and tasks from Supabase
   useEffect(() => {
@@ -203,23 +204,31 @@ const Projects = () => {
   }
 
   return (
-    <div>
-      <div className='grid grid-cols-[3fr_1fr] px-6 mt-8 poppins gap-4'>
-        <ProjectsArea
-          project={selectedProject}
-          addTask={addTask}
-          updateTask={updateTask}
-          deleteTask={deleteTask}
-          addProject={addProject}
-          projects={projects}
-          selectedProjectId={selectedProjectId}
-          onRefresh={fetchProjects}
-        />
-        <SideCard
-          projects={projects}
-          selectedProjectId={selectedProjectId}
-          setSelectedProjectId={setSelectedProjectId}
-        />
+    <div className="container mx-auto px-4 lg:px-6">
+      <div className={`grid ${activeTab === 'board' ? 'grid-cols-1 lg:grid-cols-[3fr_1fr]' : 'grid-cols-1'} mt-8 poppins gap-6`}>
+        <div className={`${activeTab === 'board' ? 'order-2 lg:order-1' : ''}`}>
+          <ProjectsArea
+            project={selectedProject}
+            addTask={addTask}
+            updateTask={updateTask}
+            deleteTask={deleteTask}
+            addProject={addProject}
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onRefresh={fetchProjects}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        </div>
+        {activeTab === 'board' && (
+          <div className="order-1 lg:order-2">
+            <SideCard
+              projects={projects}
+              selectedProjectId={selectedProjectId}
+              setSelectedProjectId={setSelectedProjectId}
+            />
+          </div>
+        )}
       </div>
     </div>
   )
