@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { IconDownload, IconCheck, IconX, IconClock } from '@tabler/icons-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { IconDownload, IconCheck, IconX, IconClock, IconFileText } from '@tabler/icons-react'
 import supabase from '../../../supabase-client'
 import { toast } from 'sonner'
 
@@ -12,6 +13,7 @@ export default function ContractProgress({ contractId, tenderId }) {
   const [signatories, setSignatories] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ signed: 0, pending: 0, declined: 0, total: 0 })
+  const [showFullContract, setShowFullContract] = useState(false)
 
   useEffect(() => {
     if (contractId) {
@@ -171,8 +173,19 @@ export default function ContractProgress({ contractId, tenderId }) {
 
       {/* Overall Progress */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Signing Progress</CardTitle>
+          {contract && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              onClick={() => setShowFullContract(true)}
+            >
+              <IconFileText className="size-4 mr-2" />
+              View Full Contract
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -258,6 +271,120 @@ export default function ContractProgress({ contractId, tenderId }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Full Contract Dialog */}
+      <Dialog open={showFullContract} onOpenChange={setShowFullContract}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-11/12 p-0">
+          <DialogHeader className="p-6 pb-2 border-b sticky top-0 bg-white/95 backdrop-blur z-10">
+            <DialogTitle>Contract Document</DialogTitle>
+          </DialogHeader>
+
+          <div className="p-6 pt-4">
+            {/* The Original Contract Content */}
+            {contract?.content ? (
+              <div
+                className="prose prose-sm max-w-none mb-10 pb-10 border-b"
+                dangerouslySetInnerHTML={{ __html: contract.content }}
+              />
+            ) : (
+              <p className="text-muted-foreground mb-10 pb-10 border-b">
+                No contract content available.
+              </p>
+            )}
+
+            {/* Signature Block */}
+            <h3 className="text-lg font-bold mb-6 text-slate-800">Signatures</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {signatories.map((sig) => (
+                <div key={sig.id} className="border rounded-xl p-5 bg-slate-50 relative overflow-hidden">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-600 px-2 py-0.5 rounded">
+                      {sig.signatory_type}
+                    </span>
+                    <span className="font-semibold text-sm truncate">{sig.signatory_email}</span>
+                  </div>
+
+                  {sig.signing_status === 'signed' ? (
+                    <div className="space-y-3 relative z-10">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Company / Organization</p>
+                        <p className="font-medium text-sm">{sig.company_name || 'N/A'}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Full Name</p>
+                          <p className="font-medium text-sm border-b border-slate-300 pb-1">
+                            {sig.signature_data?.full_name || sig.signature_data?.name || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Position / Title</p>
+                          <p className="font-medium text-sm border-b border-slate-300 pb-1">
+                            {sig.signature_data?.title || sig.signature_data?.position || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {sig.signature_data?.phone && (
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Phone</p>
+                          <p className="font-medium text-sm">{sig.signature_data.phone}</p>
+                        </div>
+                      )}
+
+                      {/* Render the actual signature */}
+                      {sig.signature_data?.signature && (
+                        <div className="pt-1">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Signature</p>
+                          {sig.signature_data.signature.startsWith('data:image') ? (
+                            <img
+                              src={sig.signature_data.signature}
+                              alt="Drawn signature"
+                              className="max-h-16 border-b-2 border-slate-800 pb-1"
+                            />
+                          ) : (
+                            <p style={{ fontFamily: "'Pacifico', cursive", fontSize: 22, color: '#1a1a2e' }} className="border-b-2 border-slate-800 pb-1 inline-block">
+                              {sig.signature_data.signature}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="pt-2">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Electronically Signed On</p>
+                        <div className="flex items-center gap-2 text-green-700 bg-green-100/50 p-2 rounded text-sm font-mono mt-1">
+                          <IconCheck className="size-4" />
+                          {formatDate(sig.signed_at)}
+                        </div>
+                      </div>
+
+                      {/* Watermark effect */}
+                      <div className="absolute -bottom-4 -right-2 opacity-10 pointer-events-none transform -rotate-12">
+                        <span className="text-6xl font-bold font-serif whitespace-nowrap">SIGNED</span>
+                      </div>
+                    </div>
+                  ) : sig.signing_status === 'declined' ? (
+                    <div className="flex flex-col items-center justify-center py-6 text-red-500 opacity-60">
+                      <IconX className="size-8 mb-2" />
+                      <span className="text-sm font-semibold uppercase tracking-widest">Declined</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                      <IconClock className="size-8 mb-2" />
+                      <span className="text-sm font-medium">Pending Signature...</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-12 text-center text-xs text-muted-foreground bg-slate-50 p-4 rounded-lg border">
+              System Generated Digital Record • ID: {contract?.id}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

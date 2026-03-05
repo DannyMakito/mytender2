@@ -9,10 +9,10 @@ export function generateContractHTML(tender, approvedBids, clientEmail, clientCo
     throw new Error('Invalid tender or bids data')
   }
 
-  const contractDate = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const contractDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 
   const biddersHTML = approvedBids.map((bid, index) => `
@@ -266,7 +266,7 @@ export function generateContractHTML(tender, approvedBids, clientEmail, clientCo
       <h2>3. TERMS & CONDITIONS</h2>
       
       <div class="editable-section">
-        <p><strong>⚠️ Client Note:</strong> Edit terms below as needed before sending to signatories.</p>
+        <p><strong>⚠️ Client Note:</strong> copy and paste the term below and Edit terms as needed before sending to signatories.</p>
       </div>
 
       <div id="terms_content" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; min-height: 200px; background: white;">
@@ -360,13 +360,13 @@ export function extractContractFormData() {
     terms_and_conditions: null,
     timestamp: new Date().toISOString()
   }
-  
+
   // Get all form fieldsets (one per bidder)
   const fieldsets = document.querySelectorAll('fieldset')
-  
+
   fieldsets.forEach((fieldset, idx) => {
     const bidderData = {}
-    
+
     // Get all inputs in this fieldset
     const inputs = fieldset.querySelectorAll('input')
     inputs.forEach(input => {
@@ -376,7 +376,7 @@ export function extractContractFormData() {
         bidderData[input.id] = input.value
       }
     })
-    
+
     if (Object.keys(bidderData).length > 0) {
       formData.bidder_info.push(bidderData)
     }
@@ -397,7 +397,7 @@ export function extractContractFormData() {
  */
 export function validateContractForm() {
   const errors = []
-  
+
   // Check text/email/tel fields
   const requiredFields = document.querySelectorAll('input[id*="form_bidder"][type="text"], input[id*="form_bidder"][type="email"], input[id*="form_bidder"][type="tel"]')
   requiredFields.forEach(field => {
@@ -435,7 +435,7 @@ export function validateContractForm() {
  */
 export function generateContractPlainText(tender, approvedBids, clientEmail, clientCompany) {
   let plainText = `SERVICE AGREEMENT CONTRACT\nGenerated: ${new Date().toLocaleDateString()}\n\n`;
-  
+
   plainText += `PARTIES:\n`;
   plainText += `Client: ${clientCompany} (${clientEmail})\n\n`;
   plainText += `Service Providers:\n`;

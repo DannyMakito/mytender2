@@ -583,31 +583,40 @@ export default function Onboarding() {
     }
 
     const validateStep = (step) => {
-        // Basic validation
+        // Step 1: Personal Info — all fields required
         if (step === 1) {
-            return formData.firstName && formData.lastName && formData.phone && formData.province
+            if (!formData.firstName.trim()) { toast.error('Please enter your first name'); return false }
+            if (!formData.lastName.trim()) { toast.error('Please enter your last name'); return false }
+            if (!formData.phone.trim()) { toast.error('Please enter your phone number'); return false }
+            if (!formData.province) { toast.error('Please select your province'); return false }
+            return true
         }
+        // Step 2: Business Details — all fields required (role-specific)
         if (step === 2) {
-            const basicFields = formData.businessName && formData.businessType && formData.industry && formData.businessDescription
-            if (role === 'supplier') {
-                return basicFields && formData.cipcNumber
-            }
-            if (role === 'pro') {
-                return basicFields && formData.specialization
-            }
-            return basicFields
+            if (!formData.businessName.trim()) { toast.error(`Please enter your ${role === 'pro' ? 'job title' : 'business name'}`); return false }
+            if (!formData.businessType) { toast.error(`Please select your ${role === 'pro' ? 'work sector' : 'business type'}`); return false }
+            if (!formData.industry) { toast.error('Please select your industry'); return false }
+            if (!formData.businessDescription.trim()) { toast.error(`Please enter your ${role === 'pro' ? 'work' : 'business'} description`); return false }
+            if (role === 'supplier' && !formData.cipcNumber.trim()) { toast.error('Please enter your CIPC registration number'); return false }
+            if (role === 'pro' && !formData.specialization) { toast.error('Please select your specialization'); return false }
+            return true
         }
+        // Step 3: Location — address and at least one region required
         if (step === 3) {
-            return formData.businessAddress && formData.operatingRegions.length > 0
+            if (!formData.businessAddress.trim()) { toast.error('Please enter your business address'); return false }
+            if (formData.operatingRegions.length === 0) { toast.error('Please select at least one operating region'); return false }
+            return true
         }
+        // Step 4: Tender Interests — at least one category required, budget required for non-suppliers
         if (step === 4) {
             if (role === 'pro' || role === 'supplier') {
-                const hasCategories = formData.tenderCategories.length > 0
-                if (role === 'supplier') return hasCategories
-                return hasCategories && formData.budgetRange
+                if (formData.tenderCategories.length === 0) { toast.error('Please select at least one tender category'); return false }
+                if (role === 'pro' && !formData.budgetRange) { toast.error('Please select a budget range'); return false }
             }
             return true
         }
+        // Step 5: Documents — OPTIONAL, always valid
+        // Document upload is not required to proceed
         return true
     }
 

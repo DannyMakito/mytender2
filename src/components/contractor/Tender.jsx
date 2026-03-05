@@ -42,8 +42,9 @@ const PROVINCES = [
 ]
 
 const CATEGORIES = [
-  "Construction", "Transportation", "Professional Services",
-  "Others", "Supplier", "Catering"
+  "Housing Development", "Office Spaces", "Professional Services",
+  "Others", "General Supplier", "Catering",
+   
 ]
 
 function daysUntil(dateStr) {
@@ -79,10 +80,11 @@ export default function Tender() {
   })
 
   const [roleInput, setRoleInput] = useState("")
-  const [collaboratorInput, setCollaboratorInput] = useState("")
+  const [requirementInput, setRequirementInput] = useState("")
   const [allowCompany, setAllowCompany] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
 
+  // For pro tenders: required_roles
   const handleAddRole = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
       e.preventDefault()
@@ -97,19 +99,19 @@ export default function Tender() {
     setForm(f => ({ ...f, required_roles: f.required_roles.filter(r => r !== roleToRemove) }))
   }
 
-  const handleAddCollaborator = (e) => {
+  // For supplier tenders: collaborators repurposed as "Requirements"
+  const handleAddRequirement = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
       e.preventDefault()
-      const email = collaboratorInput.trim()
-      if (email && email.includes('@') && !form.collaborators.includes(email)) {
-        setForm(f => ({ ...f, collaborators: [...f.collaborators, email] }))
-        setCollaboratorInput("")
+      if (requirementInput.trim() && !form.collaborators.includes(requirementInput.trim())) {
+        setForm(f => ({ ...f, collaborators: [...f.collaborators, requirementInput.trim()] }))
+        setRequirementInput("")
       }
     }
   }
 
-  const handleRemoveCollaborator = (emailToRemove) => {
-    setForm(f => ({ ...f, collaborators: f.collaborators.filter(e => e !== emailToRemove) }))
+  const handleRemoveRequirement = (itemToRemove) => {
+    setForm(f => ({ ...f, collaborators: f.collaborators.filter(r => r !== itemToRemove) }))
   }
 
   // Fetch tenders from Supabase
@@ -475,39 +477,34 @@ export default function Tender() {
                   </div>
                 )}
 
-                {/* Roles Section */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {form.tender_type === 'supplier' ? 'Requirements' : 'Required Roles'}
-                  </label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {form.tender_type === 'supplier'
-                      ? 'Add items or services required (e.g. 50x Laptops, Catering for 100).'
-                      : 'Split the tender into specific roles (e.g. Plumbing, Electrical).'}
-                  </p>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Input
-                      placeholder="Type a role and press Enter"
-                      value={roleInput}
-                      onChange={(e) => setRoleInput(e.target.value)}
-                      onKeyDown={handleAddRole}
-                    />
-                    <Button type="button" onClick={handleAddRole} variant="secondary">Add</Button>
-                  </div>
-                  {form.required_roles.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {form.required_roles.map(role => (
-                        <span key={role} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">
-                          {role}
-                          <button type="button" onClick={() => handleRemoveRole(role)} className="hover:text-destructive transition-colors">
-                            <IconX className="size-3" />
-                          </button>
-                        </span>
-                      ))}
+                {/* Required Roles — only for pro tenders */}
+                {form.tender_type === 'pro' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Required Roles</label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Split the tender into specific roles (e.g. Plumbing, Electrical).
+                    </p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        placeholder="Type a role and press Enter"
+                        value={roleInput}
+                        onChange={(e) => setRoleInput(e.target.value)}
+                        onKeyDown={handleAddRole}
+                      />
+                      <Button type="button" onClick={handleAddRole} variant="secondary">Add</Button>
                     </div>
-                  )}
-
-                  {form.tender_type === 'pro' && (
+                    {form.required_roles.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {form.required_roles.map(role => (
+                          <span key={role} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">
+                            {role}
+                            <button type="button" onClick={() => handleRemoveRole(role)} className="hover:text-destructive transition-colors">
+                              <IconX className="size-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mt-3 p-3 bg-muted/50 rounded-md border text-sm">
                       <input
                         type="checkbox"
@@ -520,8 +517,39 @@ export default function Tender() {
                         Also allow a Company to bid for the entire project (All Roles)
                       </label>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Requirements — only for supplier/quotation tenders */}
+                {form.tender_type === 'supplier' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Requirements</label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Add items or services required (e.g. 50x Laptops, Catering for 100).
+                    </p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        placeholder="Type a requirement and press Enter"
+                        value={requirementInput}
+                        onChange={(e) => setRequirementInput(e.target.value)}
+                        onKeyDown={handleAddRequirement}
+                      />
+                      <Button type="button" onClick={handleAddRequirement} variant="secondary">Add</Button>
+                    </div>
+                    {form.collaborators.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {form.collaborators.map(req => (
+                          <span key={req} className="inline-flex items-center gap-1 bg-orange-50 text-orange-700 text-xs px-2 py-1 rounded-md border border-orange-100">
+                            {req}
+                            <button type="button" onClick={() => handleRemoveRequirement(req)} className="hover:text-destructive transition-colors">
+                              <IconX className="size-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Closing Date</label>
@@ -546,36 +574,6 @@ export default function Tender() {
                     <p className="text-xs text-orange-600 mt-1">✓ {selectedFile.name} selected</p>
                   )}
                 </div>
-
-                {form.tender_type === 'pro' && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Collaborators (Invited to Edit)</label>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Enter email addresses of professionals who can help you draft this tender.
-                    </p>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Input
-                        placeholder="Enter collaborator email"
-                        value={collaboratorInput}
-                        onChange={(e) => setCollaboratorInput(e.target.value)}
-                        onKeyDown={handleAddCollaborator}
-                      />
-                      <Button type="button" onClick={handleAddCollaborator} variant="secondary">Add</Button>
-                    </div>
-                    {form.collaborators.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {form.collaborators.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1 bg-orange-50 text-orange-700 text-xs px-2 py-1 rounded-md border border-orange-100">
-                            {email}
-                            <button type="button" onClick={() => handleRemoveCollaborator(email)} className="hover:text-destructive transition-colors">
-                              <IconX className="size-3" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 <div className="pt-4 flex flex-col gap-2">
                   <Button
@@ -629,7 +627,8 @@ export default function Tender() {
                     )}
                   </CardDescription>
 
-                  {t.required_roles && t.required_roles.length > 0 && (
+                  {/* Show Required Roles for pro tenders */}
+                  {t.tender_type === 'pro' && t.required_roles && t.required_roles.length > 0 && (
                     <div className="mb-4">
                       <p className="text-xs font-medium text-muted-foreground mb-1.5">Roles Required:</p>
                       <div className="flex flex-wrap gap-1.5">
@@ -646,6 +645,25 @@ export default function Tender() {
                         {t.required_roles.includes('Company (All Roles)') && (
                           <span className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
                             Companies Allowed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show Requirements for supplier/quotation tenders */}
+                  {t.tender_type === 'supplier' && t.collaborators && t.collaborators.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Requirements:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {t.collaborators.slice(0, 3).map(req => (
+                          <span key={req} className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
+                            {req}
+                          </span>
+                        ))}
+                        {t.collaborators.length > 3 && (
+                          <span className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
+                            +{t.collaborators.length - 3} more
                           </span>
                         )}
                       </div>
@@ -722,7 +740,12 @@ export default function Tender() {
                         View Bids
                       </Button>
                     )}
-                    <Button className="w-full">View Details</Button>
+                    <Button
+                      className="w-full"
+                      onClick={() => navigate(`/tender/${t.id}/bids`)}
+                    >
+                      View Details
+                    </Button>
                   </div>
                 </CardFooter>
               </Card>

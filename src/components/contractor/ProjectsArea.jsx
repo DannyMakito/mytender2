@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IconPackage, IconChartBar, IconTimeline, IconPlus, IconLock } from '@tabler/icons-react'
+import supabase from '../../../supabase-client'
 
 const columns = [
   { id: 'todo', title: 'Yet To Start' },

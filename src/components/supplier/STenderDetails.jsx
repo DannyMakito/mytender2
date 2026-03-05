@@ -195,11 +195,11 @@ export default function STenderDetails() {
                             <h3 className="text-lg font-semibold mb-2">Description</h3>
                             <p className="text-muted-foreground whitespace-pre-wrap">{tender.description}</p>
 
-                            {tender.required_roles && tender.required_roles.length > 0 && (
+                            {tender.collaborators && tender.collaborators.length > 0 && (
                                 <div className="mt-6">
                                     <h3 className="text-lg font-semibold mb-2">Requirements</h3>
                                     <ul className="list-disc pl-5 space-y-1">
-                                        {tender.required_roles.map((req, idx) => (
+                                        {tender.collaborators.map((req, idx) => (
                                             <li key={idx} className="text-muted-foreground">{req}</li>
                                         ))}
                                     </ul>

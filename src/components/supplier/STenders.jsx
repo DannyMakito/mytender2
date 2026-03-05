@@ -44,8 +44,8 @@ export default function STenders() {
     }
 
     const filteredTenders = tenders.filter(t =>
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.description.toLowerCase().includes(search.toLowerCase())
+        (t.title?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (t.description?.toLowerCase() || "").includes(search.toLowerCase())
     )
 
     return (
@@ -106,6 +106,26 @@ export default function STenders() {
                             </CardHeader>
                             <CardContent className="flex-1">
                                 <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{t.description}</p>
+
+                                {/* Requirements (stored in collaborators field for supplier tenders) */}
+                                {t.collaborators && t.collaborators.length > 0 && (
+                                    <div className="mb-4">
+                                        <p className="text-xs font-medium text-muted-foreground mb-1.5">Requirements:</p>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {t.collaborators.slice(0, 3).map(req => (
+                                                <span key={req} className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
+                                                    {req}
+                                                </span>
+                                            ))}
+                                            {t.collaborators.length > 3 && (
+                                                <span className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
+                                                    +{t.collaborators.length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="flex items-center text-sm text-muted-foreground">
                                     <IconMapPin className="h-4 w-4 mr-1" />
                                     {t.province}

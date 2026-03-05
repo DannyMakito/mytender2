@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -22,12 +22,18 @@ export default function ContractDraftModal({
   const [generatingContract, setGeneratingContract] = useState(false)
   const [sendingContract, setSendingContract] = useState(false)
   const [contractHTML, setContractHTML] = useState('')
+  const [termsEdited, setTermsEdited] = useState('')
   const [activeTab, setActiveTab] = useState('preview')
+
+  const initRef = useRef(false)
 
   // Generate contract when modal opens
   useEffect(() => {
-    if (open && tender && approvedBids?.length > 0) {
+    if (open && tender && approvedBids?.length > 0 && !initRef.current) {
+      initRef.current = true
       generateContract()
+    } else if (!open) {
+      initRef.current = false
     }
   }, [open, tender, approvedBids])
 
@@ -45,13 +51,17 @@ export default function ContractDraftModal({
       setContractHTML(html)
 
       // Create contract record in database
+      const extractedForm = extractContractFormData()
+      const initialTerms = extractedForm?.terms_and_conditions || ''
+      setTermsEdited(initialTerms)
+
       const { data: contractRecord, error: contractError } = await supabase
         .from('contracts')
         .insert([
           {
             tender_id: tender.id,
             content: html,
-            terms_and_conditions: extractContractFormData()?.terms_and_conditions || '',
+            terms_and_conditions: initialTerms,
             created_by: user?.email,
             status: 'draft'
           }
@@ -131,17 +141,76 @@ export default function ContractDraftModal({
       // Extract and save form data
       const formData = extractContractFormData()
 
+      // Inject termsEdited back into the contract HTML before saving
+      let finalHTML = contractData.content || contractHTML
+      if (finalHTML) {
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(finalHTML, 'text/html')
+
+        // Find the terms_content div and replace its content with the edited terms converting newlines to <p> tags
+        const termsContent = doc.getElementById('terms_content')
+        if (termsContent && termsEdited) {
+          const termsParagraphs = termsEdited
+            .split('\n')
+            .filter(text => text.trim() !== '')
+            .map(text => `<p>${text}</p>`)
+            .join('')
+
+          termsContent.innerHTML = termsParagraphs
+        }
+
+        // Remove the editable hint boxes and textareas so they don't show to signatories
+        const editableSections = doc.querySelectorAll('.editable-section')
+        editableSections.forEach(section => section.remove())
+
+        const termsTextareaContainer = doc.getElementById('terms_textarea')?.parentElement
+        if (termsTextareaContainer) {
+          termsTextareaContainer.remove()
+        }
+
+        // Convert back to string
+        finalHTML = `<!DOCTYPE html>\n<html>\n${doc.documentElement.innerHTML}\n</html>`
+      }
+
       // Update contract status to 'sent'
       const { error: updateError } = await supabase
         .from('contracts')
         .update({
           status: 'sent',
           sent_at: new Date().toISOString(),
+          content: finalHTML,
+          terms_and_conditions: termsEdited,
           declarations_forms: formData
         })
         .eq('id', contractData.id)
 
       if (updateError) throw updateError
+
+      // Auto-sign the client's own signatory record
+      const clientName = user?.user_metadata?.first_name
+        ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+        : user?.email
+      const { error: autoSignError } = await supabase
+        .from('contract_signatories')
+        .update({
+          signing_status: 'signed',
+          signed_at: new Date().toISOString(),
+          signature_data: {
+            full_name: clientName,
+            title: 'Client / Contract Issuer',
+            phone: user?.user_metadata?.phone || '',
+            signature: clientName,
+            signed_at: new Date().toISOString(),
+            signer_email: user?.email,
+            auto_signed: true,
+          }
+        })
+        .eq('contract_id', contractData.id)
+        .eq('signatory_email', user?.email)
+
+      if (autoSignError) {
+        console.warn('Failed to auto-sign client:', autoSignError)
+      }
 
       // Create notifications for all signatories
       const signatories = [
@@ -243,7 +312,8 @@ export default function ContractDraftModal({
                         id="terms_and_conditions"
                         className="w-full h-64 p-3 border rounded-lg font-mono text-sm"
                         placeholder="Edit terms and conditions..."
-                        defaultValue={contractData.terms_and_conditions || ''}
+                        value={termsEdited}
+                        onChange={(e) => setTermsEdited(e.target.value)}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">

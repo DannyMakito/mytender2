@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -26,8 +26,11 @@ export default function ContractPage() {
   const [loading, setLoading] = useState(true)
   const [checkingExisting, setCheckingExisting] = useState(true)
 
+  const initRef = useRef(false)
+
   useEffect(() => {
-    if (tenderId) {
+    if (tenderId && !initRef.current) {
+      initRef.current = true
       checkExistingContract()
     }
   }, [tenderId])
@@ -192,12 +195,44 @@ export default function ContractPage() {
 
       setSendingContract(true)
 
+      // Inject termsEdited back into the contract HTML before saving
+      let finalHTML = contractData?.content || contractHTML
+      if (finalHTML) {
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(finalHTML, 'text/html')
+
+        // Find the terms_content div and replace its content with the edited terms converting newlines to <p> tags
+        const termsContent = doc.getElementById('terms_content')
+        if (termsContent && termsEdited) {
+          const termsParagraphs = termsEdited
+            .split('\n')
+            .filter(text => text.trim() !== '')
+            .map(text => `<p>${text}</p>`)
+            .join('')
+
+          termsContent.innerHTML = termsParagraphs
+        }
+
+        // Remove the editable hint boxes and textareas so they don't show to signatories
+        const editableSections = doc.querySelectorAll('.editable-section')
+        editableSections.forEach(section => section.remove())
+
+        const termsTextareaContainer = doc.getElementById('terms_textarea')?.parentElement
+        if (termsTextareaContainer) {
+          termsTextareaContainer.remove()
+        }
+
+        // Convert back to string
+        finalHTML = `<!DOCTYPE html>\n<html>\n${doc.documentElement.innerHTML}\n</html>`
+      }
+
       // Update contract with terms and send status
       const { error: updateError } = await supabase
         .from('contracts')
         .update({
           status: 'sent',
           sent_at: new Date().toISOString(),
+          content: finalHTML,
           terms_and_conditions: termsEdited
         })
         .eq('id', contractData.id)
@@ -205,6 +240,32 @@ export default function ContractPage() {
       if (updateError) {
         console.error('Contract update error:', updateError)
         throw updateError
+      }
+
+      // Auto-sign the client's own signatory record
+      const clientName = user?.user_metadata?.first_name
+        ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+        : user?.email
+      const { error: autoSignError } = await supabase
+        .from('contract_signatories')
+        .update({
+          signing_status: 'signed',
+          signed_at: new Date().toISOString(),
+          signature_data: {
+            full_name: clientName,
+            title: 'Client / Contract Issuer',
+            phone: user?.user_metadata?.phone || '',
+            signature: clientName,
+            signed_at: new Date().toISOString(),
+            signer_email: user?.email,
+            auto_signed: true,
+          }
+        })
+        .eq('contract_id', contractData.id)
+        .eq('signatory_email', user?.email)
+
+      if (autoSignError) {
+        console.warn('Failed to auto-sign client:', autoSignError)
       }
 
       console.log('Creating notifications for signatories...')
@@ -364,16 +425,17 @@ export default function ContractPage() {
             {/* Terms Editing Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Terms & Conditions</CardTitle>
+                <CardTitle className="text-base">Edit Terms & Conditions</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <label className="text-sm font-medium block">Edit Terms & Conditions</label>
+                  <label className="text-sm font-medium block"><p><strong>⚠️ Client Note:</strong> copy and paste the term from preview and Edit terms as needed before sending to signatories.</p></label>
                   <textarea
+                    id="terms_and_conditions"
+                    className="w-full h-64 p-3 border rounded-lg font-mono text-sm"
+                    placeholder="Edit terms and conditions..."
                     value={termsEdited}
                     onChange={(e) => setTermsEdited(e.target.value)}
-                    className="w-full h-32 p-3 border rounded-lg font-mono text-sm"
-                    placeholder="Add or modify terms and conditions here..."
                   />
                   <p className="text-xs text-muted-foreground">
                     Changes will be saved when you send the contract.
