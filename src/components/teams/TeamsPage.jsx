@@ -41,9 +41,9 @@ export default function TeamsPage() {
         }
     }, [user?.email])
 
-    // Set up subscriptions when projects are loaded
+    // Set up subscriptions when projects are loaded or component mounts
     useEffect(() => {
-        if (projects.length > 0) {
+        if (user?.email) {
             setupSubscriptions()
         }
         return () => {
@@ -51,7 +51,7 @@ export default function TeamsPage() {
             subscriptionsRef.current.forEach(sub => sub.unsubscribe())
             subscriptionsRef.current = []
         }
-    }, [projects])
+    }, [user?.email])
 
     // Handle Project Selection (Mark as Read)
     useEffect(() => {
@@ -135,26 +135,32 @@ export default function TeamsPage() {
         subscriptionsRef.current.forEach(sub => sub.unsubscribe())
         subscriptionsRef.current = []
 
-        // Subscribe to EACH project channel
-        projects.forEach(project => {
-            const sub = supabase
-                .channel(`public:messages:project_id=eq.${project.id}`)
-                .on('postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'messages', filter: `project_id=eq.${project.id}` },
-                    (payload) => {
-                        handleIncomingMessage(payload.new, project.id)
-                    }
-                )
-                .on('postgres_changes',
-                    { event: 'UPDATE', schema: 'public', table: 'messages', filter: `project_id=eq.${project.id}` },
-                    (payload) => {
-                        handleMessageUpdate(payload.new, project.id)
-                    }
-                )
-                .subscribe()
+        // Simplify to ONE global channel for all messages I have access to
+        // RLS will ensure I only receive messages for my projects
+        const sub = supabase
+            .channel('teams-realtime-messages')
+            .on('postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'messages' },
+                (payload) => {
+                    handleIncomingMessage(payload.new, payload.new.project_id)
+                }
+            )
+            .on('postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'messages' },
+                (payload) => {
+                    handleMessageUpdate(payload.new, payload.new.project_id)
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('Successfully subscribed to messages realtime')
+                }
+                if (status === 'CHANNEL_ERROR') {
+                    console.error('Realtime subscription error. Ensure replication is enabled for "messages" table.')
+                }
+            })
 
-            subscriptionsRef.current.push(sub)
-        })
+        subscriptionsRef.current.push(sub)
     }
 
     const handleIncomingMessage = (newMessage, projectId) => {
