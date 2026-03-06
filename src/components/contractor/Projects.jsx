@@ -28,7 +28,7 @@ const Projects = () => {
       // Fetch projects where user is owner or winner
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
-        .select('id, name, tender_id, owner_email, winner_emails, icon, created_at, total_budget, actual_spend, is_locked')
+        .select('id, name, tender_id, owner_email, winner_emails, icon, created_at, total_budget, actual_spend, is_locked, supply_items, additional_expenses, tenders:tender_id ( budget, closing_date, bids ( id, bid_amount, status, role ) )')
         .order('created_at', { ascending: false })
 
       if (projectsError) throw projectsError

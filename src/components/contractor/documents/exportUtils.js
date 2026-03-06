@@ -17,8 +17,8 @@ export async function exportToPDF(element, filename = 'tender-document') {
     iframe.style.position = 'fixed'
     iframe.style.left = '-10000px'
     iframe.style.top = '0'
-    iframe.style.width = '794px' // A4 at 96dpi
-    iframe.style.height = '1123px'
+    iframe.style.width = '850px' // Slightly wider to match standard proportions better
+    iframe.style.height = '1200px'
     iframe.style.border = 'none'
     document.body.appendChild(iframe)
 
@@ -29,28 +29,28 @@ export async function exportToPDF(element, filename = 'tender-document') {
 <html><head><style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 11pt;
-    line-height: 1.6;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 13pt;
+    line-height: 1.7;
     color: #000000;
     background: #ffffff;
-    padding: 40px 50px;
+    padding: 20px 30px;
   }
-  h1 { font-size: 22pt; font-weight: 700; margin-bottom: 12px; color: #111; }
-  h2 { font-size: 17pt; font-weight: 700; margin-bottom: 10px; margin-top: 18px; color: #111; }
-  h3 { font-size: 14pt; font-weight: 600; margin-bottom: 8px; margin-top: 14px; color: #222; }
-  h4 { font-size: 12pt; font-weight: 600; margin-bottom: 6px; margin-top: 10px; color: #333; }
-  p { margin-bottom: 8px; color: #222; }
-  ul, ol { padding-left: 28px; margin-bottom: 10px; }
-  li { margin-bottom: 4px; color: #222; }
-  u { text-decoration: underline; text-underline-offset: 2px; }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10pt; }
-  th, td { border: 1px solid #888; padding: 6px 10px; text-align: left; }
-  th { background: #e5e5e5; font-weight: 600; }
-  tr:nth-child(even) td { background: #f5f5f5; }
-  strong, b { font-weight: 700; }
+  h1 { font-size: 24pt; font-weight: bold; margin-bottom: 16px; color: #000; }
+  h2 { font-size: 18pt; font-weight: bold; margin-bottom: 12px; margin-top: 24px; color: #000; }
+  h3 { font-size: 15pt; font-weight: bold; margin-bottom: 10px; margin-top: 18px; color: #000; }
+  h4 { font-size: 13pt; font-weight: bold; margin-bottom: 8px; margin-top: 14px; color: #222; }
+  p { margin-bottom: 12px; color: #000; }
+  ul, ol { padding-left: 32px; margin-bottom: 12px; }
+  li { margin-bottom: 6px; color: #000; }
+  u { text-decoration: underline; text-underline-offset: 3px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 11pt; }
+  th, td { border: 1px solid #666; padding: 10px 14px; text-align: left; }
+  th { background: #f0f0f0; font-weight: bold; color: #000; }
+  tr:nth-child(even) td { background: #fafafa; }
+  strong, b { font-weight: bold; color: #000; }
   em, i { font-style: italic; }
-  .section-break { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; }
+  .section-break { margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd; }
 </style></head><body></body></html>`)
         iframeDoc.close()
 
@@ -58,14 +58,14 @@ export async function exportToPDF(element, filename = 'tender-document') {
         iframeDoc.body.innerHTML = element.innerHTML
 
         // Wait for rendering
-        await new Promise((r) => setTimeout(r, 300))
+        await new Promise((r) => setTimeout(r, 500))
 
         const canvas = await html2canvas(iframeDoc.body, {
-            scale: 2,
+            scale: 3, // High-res scale for crisp text
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
-            windowWidth: 794,
+            windowWidth: 850,
             window: iframe.contentWindow,
         })
 
@@ -98,10 +98,15 @@ export async function exportToPDF(element, filename = 'tender-document') {
             pageCanvas.width = imgWidth
             pageCanvas.height = sourceHeight
             const ctx = pageCanvas.getContext('2d')
+
+            // Fix for canvas smoothing for crisp edges
+            ctx.imageSmoothingEnabled = false;
+
             ctx.drawImage(canvas, 0, sourceY, imgWidth, sourceHeight, 0, 0, imgWidth, sourceHeight)
 
-            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95)
-            pdf.addImage(pageImgData, 'JPEG', margin, margin, contentWidth, destHeight)
+            // Extremely high quality compression avoiding fuzzy text
+            const pageImgData = pageCanvas.toDataURL('image/png')
+            pdf.addImage(pageImgData, 'PNG', margin, margin, contentWidth, destHeight, '', 'FAST')
 
             position += pageContentHeight
             page++

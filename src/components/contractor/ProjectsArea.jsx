@@ -23,7 +23,7 @@ const columns = [
   { id: 'done', title: 'Completed' },
 ]
 
-const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, projects, selectedProjectId, activeTab, setActiveTab }) => {
+const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, projects, selectedProjectId, onRefresh, activeTab, setActiveTab }) => {
   const { user, role } = useAuth()
   const isClient = role === 'client'
   const isPro = role === 'pro'
@@ -38,10 +38,16 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
   const [taskEndDate, setTaskEndDate] = useState('')
   const [taskColumn, setTaskColumn] = useState('todo')
   const [taskProjectId, setTaskProjectId] = useState(selectedProjectId || (project && project.id) || (projects && projects[0] && projects[0].id) || '')
-  const [taskPriorityColor, setTaskPriorityColor] = useState('orange')
+  const [taskPriorityColor, setTaskPriorityColor] = useState('blue')
   const [isMilestone, setIsMilestone] = useState(false)
   const [supplierTenders, setSupplierTenders] = useState([])
   const [fetchingSuppliers, setFetchingSuppliers] = useState(false)
+
+  // Client additional tracking
+  const [newItemName, setNewItemName] = useState('')
+  const [newItemAmount, setNewItemAmount] = useState('')
+  const [newExpName, setNewExpName] = useState('')
+  const [newExpAmount, setNewExpAmount] = useState('')
 
   async function handleCreate(e) {
     e.preventDefault()
@@ -78,7 +84,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
     setTaskDesc('')
     setTaskStartDate('')
     setTaskEndDate('')
-    setTaskPriorityColor('orange')
+    setTaskPriorityColor('blue')
     setTaskColumn('todo')
     setIsMilestone(false)
     setEditingTask(null)
@@ -91,7 +97,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
     setTaskStartDate(task.startDate || task.start_date || '')
     setTaskEndDate(task.endDate || task.end_date || '')
     setTaskColumn(task.status || 'todo')
-    setTaskPriorityColor(task.priorityColor || task.priority_color || 'orange')
+    setTaskPriorityColor(task.priorityColor || task.priority_color || 'blue')
     setIsMilestone(task.is_milestone || false)
     setEditSheetOpen(true)
   }
@@ -201,12 +207,72 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
     }
   }
 
+  // Arrays for client tracking
+  const supplyItems = project?.supply_items || []
+  const additionalExpenses = project?.additional_expenses || []
+
   // Calculate financials
-  const totalBudget = project?.total_budget || 0
-  const actualSpend = supplierTenders.reduce((acc, t) => {
+  const totalBudget = project?.tenders?.budget ? parseFloat(project.tenders.budget) : (project?.total_budget || 0)
+
+  const contractorBid = project?.tenders?.bids?.find(b => b.status === 'approved' && b.role !== 'supplier')
+  const contractorFee = contractorBid ? parseFloat(contractorBid.bid_amount) : 0
+
+  const supplierQuotesSpend = supplierTenders.reduce((acc, t) => {
     const approvedBid = t.bids?.find(b => b.status === 'approved')
     return acc + (approvedBid ? parseFloat(approvedBid.bid_amount) : 0)
-  }, 0) + (project?.tasks?.filter(t => t.status === 'done').length * 500) // Mock task cost for now
+  }, 0)
+
+  const parentSupplierBids = project?.tenders?.bids?.filter(b => b.status === 'approved' && b.role === 'supplier') || []
+  const parentSupplierSpend = parentSupplierBids.reduce((acc, b) => acc + parseFloat(b.bid_amount), 0)
+
+  const supplyItemsSpend = supplyItems.reduce((acc, item) => acc + (parseFloat(item.amount) || 0), 0)
+  const totalInvoiceAmount = supplierQuotesSpend + supplyItemsSpend + parentSupplierSpend
+
+  const totalAdditionalExpenses = additionalExpenses.reduce((acc, exp) => acc + (parseFloat(exp.amount) || 0), 0)
+
+  const actualSpend = contractorFee + totalInvoiceAmount + totalAdditionalExpenses
+
+  // Helper functions for client tracking
+  async function handleAddSupplyItem(e) {
+    e.preventDefault()
+    if (!newItemName || !newItemAmount) return
+    const newItem = { id: Date.now().toString(), name: newItemName, amount: parseFloat(newItemAmount), purchased: false }
+    const { error } = await supabase.from('projects').update({ supply_items: [...supplyItems, newItem] }).eq('id', project.id)
+    if (error) {
+      console.error(error)
+      alert("Failed to save supply item: " + error.message)
+    } else {
+      setNewItemName('')
+      setNewItemAmount('')
+      if (onRefresh) onRefresh()
+    }
+  }
+
+  async function toggleSupplyItem(id, purchased) {
+    const updated = supplyItems.map(item => item.id === id ? { ...item, purchased } : item)
+    const { error } = await supabase.from('projects').update({ supply_items: updated }).eq('id', project.id)
+    if (error) {
+      console.error(error)
+      alert("Failed to update item: " + error.message)
+    } else {
+      if (onRefresh) onRefresh()
+    }
+  }
+
+  async function handleAddExpense(e) {
+    e.preventDefault()
+    if (!newExpName || !newExpAmount) return
+    const newExp = { id: Date.now().toString(), name: newExpName, amount: parseFloat(newExpAmount) }
+    const { error } = await supabase.from('projects').update({ additional_expenses: [...additionalExpenses, newExp] }).eq('id', project.id)
+    if (error) {
+      console.error(error)
+      alert("Failed to add expense: " + error.message)
+    } else {
+      setNewExpName('')
+      setNewExpAmount('')
+      if (onRefresh) onRefresh()
+    }
+  }
 
 
   // Droppable column wrapper
@@ -271,7 +337,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
 
                     <select className="w-full rounded-md border px-3 py-2" value={taskPriorityColor} onChange={(e) => setTaskPriorityColor(e.target.value)}>
 
-                      <option value="orange">low</option>
+                      <option value="blue">low</option>
                       <option value="yellow">medium </option>
                       <option value="red">High </option>
 
@@ -296,9 +362,9 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                       id="isMilestone"
                       checked={isMilestone}
                       onChange={(e) => setIsMilestone(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                     />
-                    <label htmlFor="isMilestone" className="text-sm font-medium text-orange-700">This is a Project Milestone</label>
+                    <label htmlFor="isMilestone" className="text-sm font-medium text-purple-700">This is a Project Milestone</label>
                   </div>
 
                   <SheetFooter>
@@ -332,7 +398,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Priority</label>
                     <select className="w-full rounded-md border px-3 py-2" value={taskPriorityColor} onChange={(e) => setTaskPriorityColor(e.target.value)}>
-                      <option value="orange">low</option>
+                      <option value="blue">low</option>
                       <option value="yellow">medium</option>
                       <option value="red">High</option>
                     </select>
@@ -360,9 +426,9 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                       id="editIsMilestone"
                       checked={isMilestone}
                       onChange={(e) => setIsMilestone(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                     />
-                    <label htmlFor="editIsMilestone" className="text-sm font-medium text-orange-700">This is a Project Milestone</label>
+                    <label htmlFor="editIsMilestone" className="text-sm font-medium text-purple-700">This is a Project Milestone</label>
                   </div>
                 </div>
 
@@ -416,12 +482,28 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                             yellow: { cls: 'bg-yellow-100 text-yellow-800', label: 'Medium' },
                             red: { cls: 'bg-red-100 text-red-800', label: 'High' },
                             orange: { cls: 'bg-orange-100 text-orange-800', label: 'Low' },
+                            blue: { cls: 'bg-blue-100 text-blue-800', label: 'Low' },
+                            green: { cls: 'bg-green-100 text-green-800', label: 'Normal' },
                           }
-                          const badge = badgeMap[priorityColor] || { cls: 'bg-gray-100 text-gray-800', label: 'None' }
+
+                          let badge;
+                          if (priorityColor && badgeMap[priorityColor.toLowerCase()]) {
+                            badge = badgeMap[priorityColor.toLowerCase()]
+                          } else if (priorityColor) {
+                            // Use the actual DB color if it doesn't match our frontend maps
+                            badge = {
+                              cls: 'text-white shadow-sm',
+                              style: { backgroundColor: priorityColor },
+                              label: priorityColor.charAt(0).toUpperCase() + priorityColor.slice(1)
+                            }
+                          } else {
+                            badge = { cls: 'bg-gray-100 text-gray-800 border', label: 'None' }
+                          }
+
                           const startDate = t.startDate || t.start_date
                           const endDate = t.endDate || t.end_date
                           const createdBy = t.created_by || null
-                          const canDrag = isPro && (!createdBy || createdBy === user?.email)
+                          const canDrag = isPro && !project?.is_locked
 
                           function DraggableCard({ task }) {
                             const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -439,27 +521,52 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                               <div ref={setNodeRef} style={style} {...dragProps}>
                                 <Card key={task.id} className="rounded-lg border relative overflow-hidden">
                                   <div className="absolute top-3 left-3">
-                                    <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md ${badge.cls}`}>
+                                    <span
+                                      className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md ${badge.cls}`}
+                                      style={badge.style || {}}
+                                    >
                                       <span className="text-xs">»</span>
                                       <span>{badge.label}</span>
                                     </span>
                                   </div>
                                   <div className="absolute top-3 right-3">
-                                    {(createdBy === user?.email || project?.owner_email === user?.email) ? (
+                                    {(!project?.is_locked && (createdBy === user?.email || project?.owner_email === user?.email || isPro)) ? (
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                          <button className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted">
+                                          <button
+                                            className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
+                                            onPointerDown={(e) => e.stopPropagation()}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onTouchStart={(e) => e.stopPropagation()}
+                                          >
                                             <IconDots className="size-4" />
                                           </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                           <DropdownMenuItem onClick={() => handleEditOpen(t)} className="cursor-pointer">
                                             <IconEdit className="mr-2 h-4 w-4" />
-                                            <span>Edit</span>
+                                            <span>Edit Details</span>
                                           </DropdownMenuItem>
+                                          <div className="h-px bg-muted my-1" />
+                                          {task.status !== 'todo' && (
+                                            <DropdownMenuItem onClick={() => updateTask(project.id, { ...task, status: 'todo' })} className="cursor-pointer">
+                                              <span className="ml-6">Move to Yet To Start</span>
+                                            </DropdownMenuItem>
+                                          )}
+                                          {task.status !== 'inprogress' && (
+                                            <DropdownMenuItem onClick={() => updateTask(project.id, { ...task, status: 'inprogress' })} className="cursor-pointer">
+                                              <span className="ml-6">Move to In Progress</span>
+                                            </DropdownMenuItem>
+                                          )}
+                                          {task.status !== 'done' && (
+                                            <DropdownMenuItem onClick={() => updateTask(project.id, { ...task, status: 'done' })} className="cursor-pointer">
+                                              <span className="ml-6">Move to Completed</span>
+                                            </DropdownMenuItem>
+                                          )}
+                                          <div className="h-px bg-muted my-1" />
                                           <DropdownMenuItem onClick={() => handleDelete(t.id)} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
                                             <IconTrash className="mr-2 h-4 w-4" />
-                                            <span>Delete</span>
+                                            <span>Delete Task</span>
                                           </DropdownMenuItem>
                                         </DropdownMenuContent>
                                       </DropdownMenu>
@@ -495,22 +602,24 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                                           </span>
                                         </div>
                                         <div className="flex gap-2">
-                                          {isPro && !task.contractor_sign_off && createdBy === user?.email && (
+                                          {isPro && !task.contractor_sign_off && !project?.is_locked && (
                                             <Button
                                               size="sm"
                                               variant="secondary"
-                                              className="h-7 text-[10px] flex-1"
+                                              className="h-7 text-[10px] flex-1 border-orange-200 text-orange-700 hover:bg-orange-50 bg-white"
                                               onClick={() => updateTask(project.id, { ...task, contractor_sign_off: true })}
+                                              onPointerDown={(e) => e.stopPropagation()}
                                             >
                                               Sign Off
                                             </Button>
                                           )}
-                                          {isClient && !task.client_sign_off && project?.owner_email === user?.email && (
+                                          {isClient && !task.client_sign_off && project?.owner_email === user?.email && !project?.is_locked && (
                                             <Button
                                               size="sm"
                                               variant="secondary"
                                               className="h-7 text-[10px] flex-1 bg-orange-100 text-orange-700 hover:bg-orange-200"
                                               onClick={() => updateTask(project.id, { ...task, client_sign_off: true })}
+                                              onPointerDown={(e) => e.stopPropagation()}
                                             >
                                               Client Sign Off
                                             </Button>
@@ -557,7 +666,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
             <CardContent>
               {fetchingSuppliers ? (
                 <div className="py-8 text-center text-muted-foreground">Loading supplier data...</div>
-              ) : supplierTenders.length === 0 ? (
+              ) : supplierTenders.length === 0 && parentSupplierBids.length === 0 ? (
                 <div className="py-12 border-2 border-dashed rounded-lg text-center text-muted-foreground">
                   <IconPackage className="size-12 mx-auto mb-3 opacity-20" />
                   <p>No material quotes linked to this project yet.</p>
@@ -588,10 +697,108 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                       </div>
                     </div>
                   ))}
+                  {parentSupplierBids.map(b => (
+                    <div key={b.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-orange-100 text-orange-700 rounded-lg">
+                          <IconPackage className="size-5" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">Direct Supplier Quote <span className="text-[10px] text-muted-foreground ml-2">(from parent project)</span></p>
+                          <p className="text-xs text-muted-foreground">Category: N/A • Status: Closed</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            R{parseFloat(b.bid_amount).toLocaleString()}
+                          </p>
+                          <p className={`text-[10px] uppercase font-bold text-orange-600`}>
+                            Ordered
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {parentSupplierBids.map(b => (
+                    <div key={b.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-orange-100 text-orange-700 rounded-lg">
+                          <IconPackage className="size-5" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">Direct Supplier Quote <span className="text-[10px] text-muted-foreground ml-2">(from parent project)</span></p>
+                          <p className="text-xs text-muted-foreground">Category: N/A • Status: Closed</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            R{parseFloat(b.bid_amount).toLocaleString()}
+                          </p>
+                          <p className={`text-[10px] uppercase font-bold text-orange-600`}>
+                            Ordered
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {/* Client Custom Supply Items Management */}
+          {isClient && !project?.is_locked && (
+            <Card className="mt-4">
+              <CardHeader className="pb-3 border-b">
+                <CardTitle className="text-lg">Additional Supply Checklist</CardTitle>
+                <CardDescription>Manually track other supplies, materials, or items acquired.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <form onSubmit={handleAddSupplyItem} className="flex gap-2 mb-6">
+                  <input
+                    placeholder="Item Name (e.g., Extra Paint)"
+                    className="flex-1 rounded-md border px-3 py-2 text-sm"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                  />
+                  <div className="relative w-32">
+                    <span className="absolute left-3 top-2 text-muted-foreground text-sm">R</span>
+                    <input
+                      type="number"
+                      placeholder="Amount"
+                      className="w-full rounded-md border px-3 py-2 pl-7 text-sm"
+                      value={newItemAmount}
+                      onChange={(e) => setNewItemAmount(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" size="sm">Add</Button>
+                </form>
+
+                <div className="space-y-3">
+                  {supplyItems.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No additional items tracked yet.</p>
+                  ) : (
+                    supplyItems.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={item.purchased}
+                            onChange={(e) => toggleSupplyItem(item.id, e.target.checked)}
+                            className="size-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
+                          />
+                          <span className={`${item.purchased ? 'line-through text-muted-foreground' : 'font-medium'}`}>{item.name}</span>
+                        </div>
+                        <span className="text-sm font-semibold">R{parseFloat(item.amount).toLocaleString()}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="financials">
@@ -611,7 +818,7 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">R{actualSpend.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground mt-1">Based on approved quotes & tasks</div>
+                <div className="text-xs text-muted-foreground mt-1">Based on contractor fee, invoices & expenses</div>
               </CardContent>
             </Card>
             <Card>
@@ -620,26 +827,101 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">R{(totalBudget - actualSpend).toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground mt-1">{(100 - (actualSpend / totalBudget * 100)).toFixed(1)}% of budget left</div>
+                <div className="text-xs text-muted-foreground mt-1">{totalBudget > 0 ? (100 - (actualSpend / totalBudget * 100)).toFixed(1) : 0}% of budget left</div>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-lg">Spend Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[200px] flex items-end gap-2 justify-around border-b pb-1">
-                <div className="w-full bg-orange-300 rounded-t" style={{ height: '80%' }}></div>
-                <div className="w-full bg-orange-500 rounded-t" style={{ height: `${(actualSpend / totalBudget) * 100}%` }}></div>
-              </div>
-              <div className="flex justify-around mt-2 text-xs font-medium text-muted-foreground">
-                <span>Budget</span>
-                <span>Actual</span>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Detailed Spend Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <div>
+                      <p className="font-semibold text-sm">Contractor Fee</p>
+                      <p className="text-xs text-muted-foreground">Approved pro bid</p>
+                    </div>
+                    <span className="font-bold">R{contractorFee.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <div>
+                      <p className="font-semibold text-sm">Invoices & Materials</p>
+                      <p className="text-xs text-muted-foreground">Supplier quotes + specific supplies</p>
+                    </div>
+                    <span className="font-bold">R{totalInvoiceAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <div>
+                      <p className="font-semibold text-sm">Additional Tracking Expenses</p>
+                      <p className="text-xs text-muted-foreground">Custom client expenses</p>
+                    </div>
+                    <span className="font-bold">R{totalAdditionalExpenses.toLocaleString()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Spend Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[120px] flex items-end gap-2 justify-around border-b pb-1 mt-6">
+                  <div className="w-full bg-orange-300 rounded-t" style={{ height: '100%' }}></div>
+                  <div className="w-full bg-orange-500 rounded-t" style={{ height: `${Math.min(100, (actualSpend / totalBudget) * 100)}%` }}></div>
+                </div>
+                <div className="flex justify-around mt-2 text-xs font-medium text-muted-foreground">
+                  <span>Budget</span>
+                  <span>Spend</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Client Additional Expense Form */}
+          {isClient && !project?.is_locked && (
+            <Card className="mt-4 border-dashed bg-slate-50/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base text-slate-800">Add Outside Expense</CardTitle>
+                <CardDescription>Did you spend money outside of quotes/the platform? Track it here against the budget.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleAddExpense} className="flex gap-2 mb-6">
+                  <input
+                    placeholder="Expense Description (e.g., Council Fee)"
+                    className="flex-1 rounded-md border px-3 py-2 text-sm bg-white"
+                    value={newExpName}
+                    onChange={(e) => setNewExpName(e.target.value)}
+                  />
+                  <div className="relative w-32">
+                    <span className="absolute left-3 top-2 text-muted-foreground text-sm">R</span>
+                    <input
+                      type="number"
+                      placeholder="Amount"
+                      className="w-full rounded-md border px-3 py-2 pl-7 text-sm bg-white"
+                      value={newExpAmount}
+                      onChange={(e) => setNewExpAmount(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" size="sm" variant="secondary" className="border">Track Spend</Button>
+                </form>
+
+                {additionalExpenses.length > 0 && (
+                  <div className="space-y-2 border-t pt-4">
+                    {additionalExpenses.map(exp => (
+                      <div key={exp.id} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">• {exp.name}</span>
+                        <span className="font-semibold text-slate-700">R{parseFloat(exp.amount).toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="timeline">
@@ -654,33 +936,54 @@ const ProjectsArea = ({ project, addTask, updateTask, deleteTask, addProject, pr
                   <div className="py-8 text-center text-muted-foreground">No tasks to display in timeline.</div>
                 ) : (
                   <div className="space-y-6">
-                    {project.tasks.map(t => {
-                      const start = t.start_date || t.startDate
-                      const end = t.end_date || t.endDate
-                      if (!start || !end) return null
+                    {(() => {
+                      const validTasks = project.tasks.filter(t => (t.start_date || t.startDate) && (t.end_date || t.endDate));
+                      if (validTasks.length === 0) return <div className="text-sm text-muted-foreground mt-4">Tasks are missing start or end dates.</div>;
 
-                      const startDays = Math.floor((new Date(start) - new Date()) / (1000 * 60 * 60 * 24))
-                      const duration = Math.floor((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1
+                      const allStarts = validTasks.map(t => new Date(t.start_date || t.startDate).getTime());
+                      const allEnds = validTasks.map(t => new Date(t.end_date || t.endDate).getTime());
 
-                      return (
-                        <div key={t.id} className="relative h-12">
-                          <div className="absolute left-0 top-0 w-48 truncate text-sm font-medium">{t.title}</div>
-                          <div className="ml-52 relative h-6 bg-gray-100 rounded-full group cursor-pointer hover:bg-gray-200 transition-colors">
-                            <div
-                              className={`absolute h-full rounded-full ${t.status === 'done' ? 'bg-orange-500' : 'bg-orange-200 shadow-sm'}`}
-                              style={{
-                                left: `${Math.max(0, startDays * 2)}%`,
-                                width: `${Math.max(5, duration * 2)}%`
-                              }}
-                            >
-                              <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded shadow-md z-10 whitespace-nowrap">
-                                {new Date(start).toLocaleDateString()} - {new Date(end).toLocaleDateString()}
+                      const minStart = Math.min(...allStarts);
+                      const maxEnd = Math.max(...allEnds);
+                      const projectSpanMs = Math.max(86400000, maxEnd - minStart); // at least 1 day distance
+
+                      return validTasks.map(t => {
+                        const start = t.start_date || t.startDate
+                        const end = t.end_date || t.endDate
+
+                        const startOffsetMs = new Date(start).getTime() - minStart;
+                        const durationMs = new Date(end).getTime() - new Date(start).getTime();
+
+                        const leftPercent = (startOffsetMs / projectSpanMs) * 100;
+                        const widthPercent = Math.max(3, (durationMs / projectSpanMs) * 100);
+
+                        const statusColor = t.status === 'done' ? 'bg-green-500' : t.status === 'inprogress' ? 'bg-blue-500' : 'bg-purple-500'
+
+                        return (
+                          <div key={t.id} className="relative h-14">
+                            <div className="absolute left-0 top-0 w-48 font-medium">
+                              <div className="truncate text-sm" title={t.title}>{t.title}</div>
+                              <div className="text-xs text-muted-foreground font-semibold mt-0.5">
+                                {new Date(start).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} - {new Date(end).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                              </div>
+                            </div>
+                            <div className="ml-52 mt-1 relative h-6 bg-slate-100 rounded-full group cursor-pointer hover:bg-slate-200 transition-colors">
+                              <div
+                                className={`absolute h-full rounded-full shadow-sm ${statusColor}`}
+                                style={{
+                                  left: `${leftPercent}%`,
+                                  width: `${widthPercent}%`
+                                }}
+                              >
+                                <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded shadow-md z-10 whitespace-nowrap">
+                                  {t.status.toUpperCase()}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })
+                    })()}
                   </div>
                 )}
               </div>

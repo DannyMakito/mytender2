@@ -23,6 +23,7 @@ export default function TeamsPage() {
     const { user } = useAuth()
     const [projects, setProjects] = useState([])
     const [selectedProject, setSelectedProject] = useState(null)
+    const selectedProjectRef = useRef(null)
     const [messages, setMessages] = useState([])
     const [newMessage, setNewMessage] = useState('')
     const [loading, setLoading] = useState(true)
@@ -54,6 +55,8 @@ export default function TeamsPage() {
 
     // Handle Project Selection (Mark as Read)
     useEffect(() => {
+        selectedProjectRef.current = selectedProject
+
         if (selectedProject) {
             fetchMessages(selectedProject.id)
             markMessagesAsRead(selectedProject.id)
@@ -156,7 +159,7 @@ export default function TeamsPage() {
 
     const handleIncomingMessage = (newMessage, projectId) => {
         // If it's the currently selected project
-        if (selectedProject?.id === projectId) {
+        if (selectedProjectRef.current?.id === projectId) {
             setMessages(prev => {
                 if (prev.some(msg => msg.id === newMessage.id)) return prev
                 return [...prev, newMessage]
@@ -181,7 +184,7 @@ export default function TeamsPage() {
 
     const handleMessageUpdate = (updatedMessage, projectId) => {
         // If we are looking at this project, update the message in list (e.g. read status changed)
-        if (selectedProject?.id === projectId) {
+        if (selectedProjectRef.current?.id === projectId) {
             setMessages(prev => prev.map(msg =>
                 msg.id === updatedMessage.id ? updatedMessage : msg
             ))
@@ -264,7 +267,7 @@ export default function TeamsPage() {
         // So always show 2 checks, color depends on read.
 
         return (
-            <div className={`flex items-center ml-1 ${isRead ? 'text-orange-500' : 'text-gray-400'}`}>
+            <div className={`flex items-center ml-1 ${isRead ? 'text-blue-500' : 'text-black'}`}>
                 <IconChecks className="size-4" />
             </div>
         )

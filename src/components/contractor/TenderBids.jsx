@@ -212,7 +212,7 @@ export default function TenderBids() {
   function getStatusColor(status) {
     switch (status) {
       case 'approved':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'bg-green-100 text-green-800 border-green-200'
       case 'rejected':
         return 'bg-red-50 text-red-700 border-red-100'
       case 'submitted':
@@ -252,12 +252,6 @@ export default function TenderBids() {
         <IconArrowLeft className="size-4" />
         Back to Tenders
       </Button>
-
-      {contractDebug && (
-        <div className="mb-4 p-3 bg-slate-100 text-slate-800 text-xs rounded-md border border-slate-300 font-mono">
-          <strong>Debug Contract Progress:</strong> {contractDebug}
-        </div>
-      )}
 
       {tender && (
         <Card className="mb-6">
@@ -459,7 +453,7 @@ export default function TenderBids() {
                         <h5 className="font-bold text-sm truncate" title={bid.bidder}>{bid.bidder}</h5>
                         <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-bold uppercase">Approved</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mb-1">Role: <span className="text-foreground font-medium">{bid.role}</span></p>
+                      <p className="text-xs text-muted-foreground mb-1">Role: <span className="text-foreground font-medium">{bid.role === 'supplier' ? 'Supplier' : bid.role || 'Supplier'}</span></p>
                       <p className="text-xs text-muted-foreground mb-3">Amount: <span className="text-foreground font-medium">R{parseFloat(bid.bid_amount).toLocaleString('en-ZA')}</span></p>
                       {bid.proposal_url && (
                         <Button
@@ -528,7 +522,7 @@ export default function TenderBids() {
                         </TableCell>
                         <TableCell>
                           <span className="inline-flex items-center bg-secondary/50 text-secondary-foreground text-xs px-2 py-1 rounded border">
-                            {bid.role === 'supplier' ? 'Supplier' : bid.role || '—'}
+                            {bid.role === 'supplier' ? 'Supplier' : bid.role || 'Supplier'}
                           </span>
                         </TableCell>
                         <TableCell>R{parseFloat(bid.bid_amount).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
@@ -571,7 +565,7 @@ export default function TenderBids() {
                                   size="sm"
                                   onClick={() => handleStatusUpdate(bid.id, 'approved')}
                                   disabled={updating === bid.id}
-                                  className="text-orange-600 hover:text-orange-700"
+                                  className="text-green-600 hover:text-green-700"
                                 >
                                   <IconCheck className="size-4" />
                                   Approve

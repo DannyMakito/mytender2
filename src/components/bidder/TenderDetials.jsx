@@ -338,6 +338,38 @@ export default function TenderDetails() {
               </div>
             )}
 
+            {tender.tender_type === 'pro' && tender.required_roles && tender.required_roles.length > 0 && (
+              <div className="flex items-start gap-3 col-span-1 md:col-span-2">
+                <IconTag className="size-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Required Roles</p>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {tender.required_roles.map(role => (
+                      <span key={role} className="inline-flex items-center bg-secondary/50 text-secondary-foreground text-[10px] px-1.5 py-0.5 rounded border">
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tender.tender_type === 'supplier' && tender.collaborators && tender.collaborators.length > 0 && (
+              <div className="flex items-start gap-3 col-span-1 md:col-span-2">
+                <IconTag className="size-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Requirements</p>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {tender.collaborators.map(req => (
+                      <span key={req} className="inline-flex items-center bg-orange-50 text-orange-700 text-[10px] px-1.5 py-0.5 rounded border border-orange-200">
+                        {req}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {tender.closing_date && (
               <div className="flex items-start gap-3">
                 <IconCalendar className="size-5 text-muted-foreground mt-0.5" />

@@ -293,64 +293,6 @@ export const SECTION_DEFINITIONS = {
     `,
   },
 
-  pricing_schedule: {
-    id: 'pricing_schedule',
-    title: 'Pricing / Bill of Quantities',
-    icon: '💰',
-    order: 8,
-    defaultContent: `
-      <h3>PRICING SCHEDULE / BILL OF QUANTITIES</h3>
-      <p><br></p>
-      <p>The bidder must complete the pricing schedule below. All prices must be inclusive of VAT unless otherwise stated. Prices must be firm for the duration of the contract.</p>
-      <p><br></p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Item No.</th>
-            <th>Description</th>
-            <th>Unit</th>
-            <th>Quantity</th>
-            <th>Rate (excl. VAT)</th>
-            <th>Amount (excl. VAT)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>[Item description]</td>
-            <td>[Each/m²/hour]</td>
-            <td>[Qty]</td>
-            <td>R [0.00]</td>
-            <td>R [0.00]</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>[Item description]</td>
-            <td>[Each/m²/hour]</td>
-            <td>[Qty]</td>
-            <td>R [0.00]</td>
-            <td>R [0.00]</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>[Item description]</td>
-            <td>[Each/m²/hour]</td>
-            <td>[Qty]</td>
-            <td>R [0.00]</td>
-            <td>R [0.00]</td>
-          </tr>
-        </tbody>
-      </table>
-      <p><br></p>
-
-      <p><strong>Sub-Total (excl. VAT):</strong> R [0.00]</p>
-      <p><strong>VAT (15%):</strong> R [0.00]</p>
-      <p><strong>TOTAL (incl. VAT):</strong> R [0.00]</p>
-      <p><br></p>
-      <p><em>Note: The employer reserves the right to increase or decrease quantities as required.</em></p>
-    `,
-  },
 
   terms_and_conditions: {
     id: 'terms_and_conditions',
@@ -432,7 +374,7 @@ export const TEMPLATES = [
   {
     id: 'standard',
     name: 'Standard Tender Document',
-    description: 'Complete tender document with all sections — scope, specifications, technical requirements, returnable documents, evaluation criteria, pricing, terms, and declarations.',
+    description: 'Complete tender document with all sections — scope, specifications, technical requirements, returnable documents, evaluation criteria, terms, and declarations.',
     icon: '📝',
     color: '#f97316',
     sections: [
@@ -443,7 +385,6 @@ export const TEMPLATES = [
       'technical_requirements',
       'returnable_documents',
       'evaluation_criteria',
-      'pricing_schedule',
       'terms_and_conditions',
       'declarations',
     ],
@@ -466,14 +407,13 @@ export const TEMPLATES = [
   {
     id: 'rfq',
     name: 'Request for Quotation (RFQ)',
-    description: 'Brief request for pricing on specific goods or services — includes specifications and a pricing schedule.',
+    description: 'Brief request for pricing on specific goods or services — includes specifications.',
     icon: '💼',
     color: '#ea580c',
     sections: [
       'cover_page',
       'scope_of_work',
       'project_specifications',
-      'pricing_schedule',
       'terms_and_conditions',
       'declarations',
     ],

@@ -30,7 +30,6 @@ export default function STenders() {
             const { data, error } = await supabase
                 .from('tenders')
                 .select('*')
-                .eq('tender_type', 'supplier')
                 .eq('status', 'open')
                 .order('created_at', { ascending: false })
 
@@ -52,8 +51,8 @@ export default function STenders() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Quotation Tenders</h1>
-                    <p className="text-muted-foreground">Find and bid on tenders requiring supplier quotations.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">Available Tenders</h1>
+                    <p className="text-muted-foreground">Find and bid on open tenders.</p>
                 </div>
             </div>
 
@@ -107,8 +106,27 @@ export default function STenders() {
                             <CardContent className="flex-1">
                                 <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{t.description}</p>
 
+                                {/* Show Requirements (unified for all tender types) */}
+                                {t.tender_type === 'pro' && t.required_roles && t.required_roles.length > 0 && (
+                                    <div className="mb-4">
+                                        <p className="text-xs font-medium text-muted-foreground mb-1.5">Requirements:</p>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {t.required_roles.filter(role => role !== 'Company (All Roles)').slice(0, 3).map(role => (
+                                                <span key={role} className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
+                                                    {role}
+                                                </span>
+                                            ))}
+                                            {t.required_roles.filter(role => role !== 'Company (All Roles)').length > 3 && (
+                                                <span className="inline-flex items-center bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1.5 py-0.5 rounded border">
+                                                    +{t.required_roles.filter(role => role !== 'Company (All Roles)').length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Requirements (stored in collaborators field for supplier tenders) */}
-                                {t.collaborators && t.collaborators.length > 0 && (
+                                {t.tender_type === 'supplier' && t.collaborators && t.collaborators.length > 0 && (
                                     <div className="mb-4">
                                         <p className="text-xs font-medium text-muted-foreground mb-1.5">Requirements:</p>
                                         <div className="flex flex-wrap gap-1.5">

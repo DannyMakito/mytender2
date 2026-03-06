@@ -17,7 +17,10 @@ import {
   IconTrophy,
   IconX,
   IconClipboard,
-  IconGift
+  IconGift,
+  IconSignature,
+  IconUserCheck,
+  IconUserX
 } from '@tabler/icons-react'
 import supabase from '../../supabase-client.js'
 
@@ -27,6 +30,9 @@ const NOTIFICATION_TYPES = {
   REJECTED_BID: { label: 'Rejections', icon: IconX, color: 'bg-red-100 text-red-800' },
   PROJECT_TASK: { label: 'Project Task', icon: IconClipboard, color: 'bg-orange-200 text-orange-900' },
   NEW_BID: { label: 'New Bid', icon: IconGift, color: 'bg-amber-100 text-amber-800' },
+  NEW_CONTRACT: { label: 'Contracts to Sign', icon: IconSignature, color: 'bg-blue-100 text-blue-800' },
+  ACCOUNT_ACTIVATED: { label: 'Account Activated', icon: IconUserCheck, color: 'bg-green-100 text-green-800' },
+  ACCOUNT_REJECTED: { label: 'Account Rejected', icon: IconUserX, color: 'bg-red-100 text-red-800' },
 }
 
 export default function NotificationsPage() {
