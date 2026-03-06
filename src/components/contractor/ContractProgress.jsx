@@ -274,7 +274,10 @@ export default function ContractProgress({ contractId, tenderId }) {
 
       {/* Full Contract Dialog */}
       <Dialog open={showFullContract} onOpenChange={setShowFullContract}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-11/12 p-0">
+        <DialogContent
+          className="max-h-[95vh] overflow-y-auto p-0 border-none shadow-2xl"
+          style={{ maxWidth: 'min(1200px, 95vw)', width: '95vw' }}
+        >
           <DialogHeader className="p-6 pb-2 border-b sticky top-0 bg-white/95 backdrop-blur z-10">
             <DialogTitle>Contract Document</DialogTitle>
           </DialogHeader>
@@ -283,7 +286,7 @@ export default function ContractProgress({ contractId, tenderId }) {
             {/* The Original Contract Content */}
             {contract?.content ? (
               <div
-                className="prose prose-sm max-w-none mb-10 pb-10 border-b"
+                className="prose prose-base w-full max-w-none mb-10 pb-10 border-b overflow-x-auto"
                 dangerouslySetInnerHTML={{ __html: contract.content }}
               />
             ) : (
