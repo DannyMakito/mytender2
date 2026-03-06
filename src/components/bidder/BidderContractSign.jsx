@@ -137,6 +137,38 @@ export default function BidderContractSign() {
     }
   }
 
+  const handleOpenFullContract = () => {
+    const newWindow = window.open('', '_blank')
+    newWindow.document.write(`
+      <html>
+        <head>
+          <title>Contract - ${contract.contract_number}</title>
+          <style>
+            body { font-family: sans-serif; padding: 40px; line-height: 1.6; max-width: 900px; margin: 0 auto; color: #333; }
+            .header { border-bottom: 2px solid #eee; margin-bottom: 30px; padding-bottom: 10px; }
+            .content { background: white; }
+            @media print { body { padding: 0; } .no-print { display: none; } }
+            .no-print { margin-bottom: 20px; }
+            button { padding: 10px 20px; cursor: pointer; background: #f97316; color: white; border: none; rounded: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="no-print">
+            <button onclick="window.print()">Print / Save as PDF</button>
+          </div>
+          <div class="header">
+            <h1>Contract: ${contract.contract_number}</h1>
+            <p><strong>Tender:</strong> ${contract.tenders?.title || 'N/A'}</p>
+          </div>
+          <div class="content">
+            ${contract.content}
+          </div>
+        </body>
+      </html>
+    `)
+    newWindow.document.close()
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -200,9 +232,22 @@ export default function BidderContractSign() {
               <CardTitle className="text-sm sm:text-base">
                 📄 Contract Details
               </CardTitle>
-              <span className="lg:hidden text-xs text-muted-foreground border rounded-md px-2 py-1">
-                {showContract ? 'Hide ▲' : 'View ▼'}
-              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[10px] hidden sm:flex"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenFullContract();
+                  }}
+                >
+                  Open in New Tab
+                </Button>
+                <span className="lg:hidden text-xs text-muted-foreground border rounded-md px-2 py-1">
+                  {showContract ? 'Hide ▲' : 'View ▼'}
+                </span>
+              </div>
             </button>
 
             {/* Always visible on large screens, toggled on mobile */}
@@ -212,6 +257,14 @@ export default function BidderContractSign() {
                   className="prose prose-sm max-w-none bg-white p-3 sm:p-6 rounded-lg border overflow-auto max-h-60 sm:max-h-96 text-xs sm:text-sm"
                   dangerouslySetInnerHTML={{ __html: contract.content }}
                 />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full mt-3 sm:hidden text-orange-600"
+                  onClick={handleOpenFullContract}
+                >
+                  Open Full Contract in New Tab
+                </Button>
               </CardContent>
             </div>
           </Card>
