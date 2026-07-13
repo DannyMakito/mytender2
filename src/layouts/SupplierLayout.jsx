@@ -6,6 +6,7 @@ import {
     SidebarProvider,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/context/AuthContext"
+import MobileBottomNav from "@/components/navigation/MobileBottomNav"
 
 const SUPPLIER_ROUTES = [
     '/sdashboard',
@@ -82,11 +83,12 @@ export default function SupplierLayout() {
                 <SiteHeader />
                 <div className="flex flex-1 flex-col">
                     <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
+                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6 pb-16 lg:pb-6">
                             <Outlet />
                         </div>
                     </div>
                 </div>
+                <MobileBottomNav />
             </SidebarInset>
         </SidebarProvider>
     )

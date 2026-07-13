@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { useAuth } from "@/context/AuthContext"
+import MobileBottomNav from "@/components/navigation/MobileBottomNav"
 
 // Define contractor-specific routes
 const CONTRACTOR_ROUTES = [
@@ -82,12 +83,13 @@ export default function ContractorLayout() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 pb-16 lg:pb-6">
               {/* Child routes render here */}
               <Outlet />
             </div>
           </div>
         </div>
+        <MobileBottomNav />
       </SidebarInset>
     </SidebarProvider>
   )

@@ -74,50 +74,56 @@ export function SectionCards() {
     {
       label: role === 'pro' ? 'Total Bids' : 'Total Tenders',
       value: stats.total,
-      description: role === 'pro' ? 'Bids you have submitted' : 'Tenders you have posted'
+      description: role === 'pro' ? 'Bids submitted' : 'Tenders posted',
+      gradient: 'from-blue-500 to-blue-600',
+      ring: 'ring-blue-400/30'
     },
     {
       label: 'Awarded',
       value: stats.awarded,
-      description: role === 'pro' ? 'Bids approved' : 'Tenders awarded'
+      description: role === 'pro' ? 'Bids approved' : 'Tenders won',
+      gradient: 'from-emerald-400 to-emerald-600',
+      ring: 'ring-emerald-300/30'
     },
     {
       label: 'Rejected',
       value: stats.rejected,
-      description: role === 'pro' ? 'Bids unsuccessful' : 'Tenders rejected'
+      description: role === 'pro' ? 'Unsuccessful' : 'Tenders rejected',
+      gradient: 'from-rose-400 to-rose-600',
+      ring: 'ring-rose-300/30'
     },
     {
       label: role === 'pro' ? 'Withdrawn' : 'Closed',
       value: stats.closed,
-      description: role === 'pro' ? 'Bids removed' : 'Expired/Closed tenders'
+      description: role === 'pro' ? 'Removed bids' : 'Expired tenders',
+      gradient: 'from-violet-500 to-purple-600',
+      ring: 'ring-violet-400/30'
     }
   ]
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 min-h-[140px] items-center justify-center">
+      <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 min-h-[140px] items-center justify-center">
         <IconLoader2 className="animate-spin size-8 text-primary mx-auto col-span-full" />
       </div>
     )
   }
 
   return (
-    <div
-      className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       {cards.map((card, i) => (
-        <Card key={i} className="@container/card">
-          <CardHeader>
-            <CardDescription>{card.label}</CardDescription>
-            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-              {card.value}
-            </CardTitle>
-          </CardHeader>
-          <CardFooter className="flex-col items-start gap-1.5 text-sm">
-            <div className="line-clamp-1 flex gap-2 font-medium">
-              {card.description}
-            </div>
-          </CardFooter>
-        </Card>
+        <div
+          key={i}
+          className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-4 shadow-md ring-1 ${card.ring} flex flex-col justify-between min-h-[130px]`}
+        >
+          <div className="absolute -right-4 -top-4 size-24 rounded-full bg-white/10 blur-sm" />
+          <div className="absolute -bottom-6 -left-6 size-20 rounded-full bg-white/5" />
+          <div className="relative z-10">
+            <p className="text-xs font-medium text-white/70 uppercase tracking-wide">{card.label}</p>
+            <p className="text-3xl font-bold text-white mt-1 tabular-nums">{card.value}</p>
+          </div>
+          <p className="relative z-10 text-xs text-white/60 mt-2">{card.description}</p>
+        </div>
       ))}
     </div>
   );

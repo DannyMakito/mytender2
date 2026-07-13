@@ -10,7 +10,7 @@ export function Header() {
     <header className="absolute top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-orange-200/50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded shadow-lg"></div>
+          <img src="/mtlogo-bg.png" alt="MyTender logo" className="w-8 h-8 rounded shadow-lg object-cover" />
           <span className="text-xl font-semibold text-orange-600">MyTender</span>
         </div>
         

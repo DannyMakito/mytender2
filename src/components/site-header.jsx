@@ -9,7 +9,10 @@ export function SiteHeader() {
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
-        <h1 className="text-base font-medium">My Tender</h1>
+        <div className="flex items-center gap-2">
+          <img src="/mtlogo-bg.png" alt="MyTender logo" className="w-8 h-8 rounded object-cover" />
+          <span className="text-base font-medium">My Tender</span>
+        </div>
         <div className="ml-auto flex items-center gap-2">
           <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
             <a

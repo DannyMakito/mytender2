@@ -1,5 +1,7 @@
 import React from 'react'
 import { Header } from './Header'
+import { useIsMobile } from '@/hooks/use-mobile'
+import MobileLoginPage from './MobileLoginPage'
 
 import Tenders from '../bidder/Tenders'
 import Tender from '../contractor/Tender'
@@ -11,6 +13,12 @@ import { HowItWorks } from './HowItWorks'
 import { CTA } from './CTA'
 import { Footer } from './Footer'
 const HomePage = () => {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return <MobileLoginPage />
+  }
+
   return (
     <div>
       <Header />

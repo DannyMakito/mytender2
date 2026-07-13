@@ -67,42 +67,48 @@ export default function SDashboard() {
                 <p className="text-muted-foreground">Welcome back! Here is an overview of your quotations and teams.</p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-                <Link to="/stenders">
-                    <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Available Tenders</CardTitle>
-                            <IconListDetails className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{loading ? "..." : stats.availableTenders}</div>
-                            <p className="text-xs text-muted-foreground">Quotation tenders open for bids</p>
-                        </CardContent>
-                    </Card>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                <Link to="/stenders" className="group">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-4 shadow-md ring-1 ring-blue-400/30 flex flex-col justify-between min-h-[130px] transition-transform group-hover:scale-[1.02]">
+                        <div className="absolute -right-4 -top-4 size-24 rounded-full bg-white/10 blur-sm" />
+                        <div className="absolute -bottom-6 -left-6 size-20 rounded-full bg-white/5" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-medium text-white/70 uppercase tracking-wide">Available Tenders</p>
+                                <IconListDetails className="size-4 text-white/60" />
+                            </div>
+                            <p className="text-3xl font-bold text-white mt-1 tabular-nums">{loading ? "..." : stats.availableTenders}</p>
+                        </div>
+                        <p className="relative z-10 text-xs text-white/60 mt-2">Open for bids</p>
+                    </div>
                 </Link>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Bids</CardTitle>
-                        <IconClock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{loading ? "..." : stats.activeBids}</div>
-                        <p className="text-xs text-muted-foreground">Quotations you have submitted</p>
-                    </CardContent>
-                </Card>
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 p-4 shadow-md ring-1 ring-emerald-300/30 flex flex-col justify-between min-h-[130px]">
+                    <div className="absolute -right-4 -top-4 size-24 rounded-full bg-white/10 blur-sm" />
+                    <div className="absolute -bottom-6 -left-6 size-20 rounded-full bg-white/5" />
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs font-medium text-white/70 uppercase tracking-wide">Active Bids</p>
+                            <IconClock className="size-4 text-white/60" />
+                        </div>
+                        <p className="text-3xl font-bold text-white mt-1 tabular-nums">{loading ? "..." : stats.activeBids}</p>
+                    </div>
+                    <p className="relative z-10 text-xs text-white/60 mt-2">Quotations submitted</p>
+                </div>
 
-                <Link to="/teams">
-                    <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Your Teams</CardTitle>
-                            <IconUsers className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{loading ? "..." : stats.wonTeams}</div>
-                            <p className="text-xs text-muted-foreground">Successful bids turned into teams</p>
-                        </CardContent>
-                    </Card>
+                <Link to="/teams" className="group">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 p-4 shadow-md ring-1 ring-violet-400/30 flex flex-col justify-between min-h-[130px] transition-transform group-hover:scale-[1.02]">
+                        <div className="absolute -right-4 -top-4 size-24 rounded-full bg-white/10 blur-sm" />
+                        <div className="absolute -bottom-6 -left-6 size-20 rounded-full bg-white/5" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-medium text-white/70 uppercase tracking-wide">Your Teams</p>
+                                <IconUsers className="size-4 text-white/60" />
+                            </div>
+                            <p className="text-3xl font-bold text-white mt-1 tabular-nums">{loading ? "..." : stats.wonTeams}</p>
+                        </div>
+                        <p className="relative z-10 text-xs text-white/60 mt-2">Successful bids</p>
+                    </div>
                 </Link>
             </div>
 
